@@ -7,10 +7,10 @@ Rectangle {
     id: root
     signal clicked()
 
-    color: Theme.alpha(Theme.shelfBackground, Theme.shelfOpacity)
-    radius: 12
-    border.color: Theme.hover
-    border.width: 1
+    color: Theme.panelBackground
+    radius: Theme.panelRadius
+    border.color: Theme.panelBorder
+    border.width: Theme.panelBorderWidth
 
     MouseArea {
         anchors.fill: parent

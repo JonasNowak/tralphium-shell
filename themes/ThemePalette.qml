@@ -11,4 +11,8 @@ QtObject {
     property color accent: "#88C0D0"
     property color indicatorActive: "#ffffff"
     property color indicatorInactive: "#aaaaaa"
+
+    // Uniform panel styling defaults
+    property int panelBorderWidth: 1
+    property int panelRadius: 16
 }

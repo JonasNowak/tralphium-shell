@@ -20,7 +20,6 @@ Overlay {
         anchors.centerIn: parent
         width: options.implicitWidth + 32
         height: options.implicitHeight + 32
-        radius: 16
         focus: true
         Keys.onEscapePressed: root.close()
 

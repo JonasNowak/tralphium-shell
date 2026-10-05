@@ -17,8 +17,10 @@ Overlay {
     onVisibleChanged: {
         if (!visible) return;
         Audio.refresh();
+        Audio.refreshSinks();
         Brightness.refresh();
         Battery.refresh();
+        panel.forceActiveFocus();
     }
 
     // First click outside closes the sink menu, the next one the panel
@@ -34,7 +36,11 @@ Overlay {
         width: 380
         height: layout.implicitHeight + 32
         anchors { right: parent.right; bottom: parent.bottom; margins: 4 }
-        radius: 24
+        focus: true
+        Keys.onEscapePressed: {
+            if (sinkMenu.visible) sinkMenu.visible = false;
+            else root.close();
+        }
         onClicked: sinkMenu.visible = false
 
         ColumnLayout {
@@ -92,7 +98,7 @@ Overlay {
                     }
                     IconButton { icon: "lock"; onClicked: Session.lock() }
                     IconButton { icon: "settings"; onClicked: root.run("kitty -e vim ~/.config/mango/config.conf") }
-                    IconButton { icon: "expand_more" }
+                    IconButton { icon: "expand_more"; onClicked: root.close() }
                 }
             }
 

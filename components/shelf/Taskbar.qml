@@ -69,13 +69,19 @@ Item {
                 appId: modelData
                 name: root.capitalize(modelData)
                 running: windows.length > 0
-                active: windows.some(w => w.activated)
+                active: Boolean(ToplevelManager.activeToplevel && (ToplevelManager.activeToplevel.appId || "").toLowerCase() === modelData.toLowerCase())
                 onHoveredChanged: root.showTooltip(pinned, hovered)
-                onClicked: button => root.handleClick(pinned, button, null, () => {
-                    if (pinned.running)
-                        pinned.windows[0].activate();
-                    else
+                onClicked: button => root.handleClick(pinned, button, windows.length > 0 ? windows[0] : null, () => {
+                    if (pinned.running) {
+                        const activeIdx = windows.findIndex(w => w.activated);
+                        if (activeIdx >= 0 && windows.length > 1) {
+                            windows[(activeIdx + 1) % windows.length].activate();
+                        } else {
+                            windows[0].activate();
+                        }
+                    } else {
                         Quickshell.execDetached(["sh", "-c", `gtk-launch ${pinned.appId} || ${pinned.appId}`]);
+                    }
                 })
             }
         }

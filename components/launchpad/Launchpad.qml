@@ -44,7 +44,6 @@ Overlay {
         width: 590
         height: 654
         anchors { left: parent.left; bottom: parent.bottom; margins: 4 }
-        radius: 20
         onClicked: appMenu.visible = false
 
         ColumnLayout {
@@ -76,6 +75,11 @@ Overlay {
                         background: Item {}
                         placeholderText: "Search apps or web..."
                         placeholderTextColor: Theme.alpha(Theme.textForeground, 0.5)
+
+                        Keys.onEscapePressed: {
+                            if (appMenu.visible) appMenu.visible = false;
+                            else root.close();
+                        }
 
                         onAccepted: {
                             if (root.filteredApps.length > 0) {

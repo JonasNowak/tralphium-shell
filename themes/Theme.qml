@@ -31,6 +31,12 @@ Singleton {
     readonly property color activeTint: Qt.rgba(0.2, 0.5, 1.0, 0.3)
     readonly property color danger: "#ff5252"
 
+    // Uniform panel styling
+    readonly property color panelBackground: alpha(shelfBackground, shelfOpacity)
+    readonly property color panelBorder: hover
+    readonly property int panelBorderWidth: current.panelBorderWidth
+    readonly property int panelRadius: current.panelRadius
+
     // Material Symbols icon font, loaded once for the whole shell
     readonly property FontLoader iconFontLoader: FontLoader { source: "../assets/fonts/MaterialSymbolsRounded.ttf" }
     readonly property string iconFont: iconFontLoader.name

@@ -3,6 +3,8 @@ import QtQuick.Layouts
 import Quickshell
 import qs.themes
 
+import qs.widgets
+
 // Bottom shelf: launcher button, centered taskbar and status area.
 PanelWindow {
     id: root
@@ -15,27 +17,18 @@ PanelWindow {
         left: true
         right: true
     }
-    implicitHeight: 48
+    implicitHeight: 48 + 8 // add some space for bottom margin
     color: "transparent"
 
-    Rectangle {
+    Card {
         anchors.fill: parent
-        color: Theme.alpha(Theme.shelfBackground, Theme.shelfOpacity)
-        radius: 20
+        anchors.bottomMargin: 8
+        anchors.leftMargin: 8
+        anchors.rightMargin: 8
 
-        // Square off the bottom corners
-        Rectangle {
-            anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-            height: parent.radius
-            color: parent.color
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                taskbar.closeMenu();
-                root.backgroundClicked();
-            }
+        onClicked: {
+            taskbar.closeMenu();
+            root.backgroundClicked();
         }
 
         RowLayout {
