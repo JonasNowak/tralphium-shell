@@ -19,8 +19,9 @@ Singleton {
     }
 
     function setDefaultSink(id) {
-        defaultSetter.command = ["wpctl", "set-default", id];
-        defaultSetter.running = true;
+        Quickshell.execDetached(["wpctl", "set-default", id]);
+        root.sinks = root.sinks.map(s => Object.assign({}, s, { isDefault: s.id === id }));
+        refreshSinks();
     }
 
     Process {
@@ -29,7 +30,7 @@ Singleton {
         command: ["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const match = this.text.match(/Volume: (\d+\.\d+)/);
+                const match = this.text.match(/Volume:\s*([\d.]+)/);
                 if (match) root.volume = parseFloat(match[1]);
             }
         }
@@ -38,6 +39,7 @@ Singleton {
     // Outputs one "id|isDefault|name" line per sink
     Process {
         id: sinkReader
+        running: true
         command: [Quickshell.shellPath("etc/get_sinks.sh")]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -47,10 +49,5 @@ Singleton {
                     .map(parts => ({ id: parts[0].trim(), isDefault: parts[1].trim() === "1", name: parts[2].trim() }));
             }
         }
-    }
-
-    Process {
-        id: defaultSetter
-        onExited: root.refreshSinks()
     }
 }

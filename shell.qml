@@ -10,9 +10,18 @@ import qs.components.powermenu
 // The active theme is selected in themes/Theme.qml.
 ShellRoot {
     Shelf {
-        onLauncherClicked: launchpad.toggle()
-        onStatusClicked: controlPanel.toggle()
-        onBackgroundClicked: controlPanel.close()
+        onLauncherClicked: {
+            controlPanel.close();
+            launchpad.toggle();
+        }
+        onStatusClicked: {
+            launchpad.close();
+            controlPanel.toggle();
+        }
+        onBackgroundClicked: {
+            controlPanel.close();
+            launchpad.close();
+        }
     }
 
     Launchpad { id: launchpad }
@@ -27,6 +36,9 @@ ShellRoot {
     // e.g. bind a key to: qs ipc call shell toggleLaunchpad
     IpcHandler {
         target: "shell"
-        function toggleLaunchpad(): void { launchpad.toggle(); }
+        function toggleLaunchpad() {
+            controlPanel.close();
+            launchpad.toggle();
+        }
     }
 }
