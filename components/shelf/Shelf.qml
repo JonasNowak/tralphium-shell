@@ -17,14 +17,18 @@ PanelWindow {
         left: true
         right: true
     }
-    implicitHeight: 48 + 8 // add some space for bottom margin
+    implicitHeight: 48
     color: "transparent"
 
     Card {
         anchors.fill: parent
-        anchors.bottomMargin: 8
-        anchors.leftMargin: 8
-        anchors.rightMargin: 8
+
+        // Square off the bottom corners
+        Rectangle {
+            anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+            height: Theme.panelRadius
+            color: parent.color
+        }
 
         onClicked: {
             taskbar.closeMenu();
