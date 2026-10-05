@@ -20,15 +20,10 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: Theme.alpha(Theme.shelfBackground, Theme.shelfOpacity)
+        color: "transparent"
         radius: 20
 
-        // Square off the bottom corners
-        Rectangle {
-            anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-            height: parent.radius
-            color: parent.color
-        }
+
 
         MouseArea {
             anchors.fill: parent
