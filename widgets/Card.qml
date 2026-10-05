@@ -7,7 +7,7 @@ Rectangle {
     id: root
     signal clicked()
 
-    color: Theme.shelfBackground
+    color: Theme.alpha(Theme.shelfBackground, Theme.shelfOpacity)
     radius: 12
     border.color: Theme.hover
     border.width: 1
