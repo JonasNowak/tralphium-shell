@@ -11,6 +11,7 @@ import qs.widgets
 Overlay {
     id: root
     signal powerMenuRequested()
+    signal settingsRequested()
 
     property bool nightLightOn: false
     property bool trayExpanded: false
@@ -209,7 +210,7 @@ Overlay {
                                             onClicked: {
                                                 let p = modelData.image || modelData.icon || "";
                                                 if (p.startsWith("file://")) p = p.substring(7);
-                                                Quickshell.execDetached(["gimp", p]);
+                                                Config.launchImageEditor(p);
                                                 delegateRoot.performDismiss();
                                             }
                                         }
@@ -218,14 +219,14 @@ Overlay {
                                             onClicked: {
                                                 let p = modelData.image || modelData.icon || "";
                                                 if (p.startsWith("file://")) p = p.substring(7);
-                                                Quickshell.execDetached(["localsend", p]);
+                                                Config.launchShare(p);
                                                 delegateRoot.performDismiss();
                                             }
                                         }
                                         ActionButton {
                                             text: "AI"
                                             onClicked: {
-                                                Quickshell.execDetached(["helium-browser", "https://gemini.google.com/"]);
+                                                Config.launchBrowser("https://gemini.google.com/");
                                                 delegateRoot.performDismiss();
                                             }
                                         }
@@ -249,6 +250,15 @@ Overlay {
                 else root.close();
             }
             onClicked: sinkMenu.visible = false
+            
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton
+                onWheel: (wheel) => {
+                    // Close on any trackpad swipe on the panel background
+                    root.close();
+                }
+            }
 
             ColumnLayout {
                 id: layout
@@ -304,7 +314,13 @@ Overlay {
                             }
                         }
                         IconButton { icon: "lock"; onClicked: Session.lock() }
-                        IconButton { icon: "settings"; onClicked: root.run("kitty -e vim ~/.config/mango/config.conf") }
+                        IconButton {
+                            icon: "settings"
+                            onClicked: {
+                                root.close();
+                                root.settingsRequested();
+                            }
+                        }
                         IconButton {
                             icon: root.trayExpanded ? "expand_less" : "expand_more"
                             onClicked: {
@@ -371,11 +387,11 @@ Overlay {
 
                     QuickToggle {
                         icon: "wifi"; title: "Network"; subtitle: "Strong"; active: true
-                        onClicked: root.run("kitty -e nmtui")
+                        onClicked: Config.launchNetworkManager()
                     }
                     QuickToggle {
                         icon: "bluetooth"; title: "Bluetooth"; subtitle: "On"; active: true
-                        onClicked: root.run("kitty -e bluetui")
+                        onClicked: Config.launchBluetoothManager()
                     }
                     QuickToggle {
                         icon: "notifications"
@@ -404,7 +420,7 @@ Overlay {
                         icon: "wifi_tethering"; title: "Share"
                         onClicked: {
                             root.close();
-                            root.run("localsend");
+                            Config.launchShare("");
                         }
                     }
                 }

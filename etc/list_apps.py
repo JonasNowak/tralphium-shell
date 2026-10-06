@@ -1,7 +1,5 @@
-import sys
 #!/usr/bin/env python3
-"""Generate a JSON list of apps from installed .desktop files."""
-import configparser
+"""Print a compact JSON list of apps from installed .desktop files."""
 import glob
 import json
 import os
@@ -14,25 +12,32 @@ SEARCH_PATHS = [
     '~/.local/share/flatpak/exports/share/applications',
     '/var/lib/snapd/desktop/applications',
 ]
+KEYS = ('Name', 'NoDisplay', 'Icon', 'Exec')
 
 
 def read_entry(path):
-    """Return the [Desktop Entry] section of a .desktop file, or None."""
+    """Return the wanted keys of the [Desktop Entry] section (stops reading after it)."""
+    entry = {}
+    in_entry = False
     with open(path, encoding='utf-8') as f:
-        content = f.read()
-    if '[Desktop Entry]' not in content:
-        return None
-    config = configparser.ConfigParser(interpolation=None)
-    config.read_string('[Desktop Entry]\n' + content.split('[Desktop Entry]', 1)[1])
-    return config['Desktop Entry']
+        for line in f:
+            if line.startswith('['):
+                if in_entry:
+                    break
+                in_entry = line.strip() == '[Desktop Entry]'
+            elif in_entry:
+                key, _, value = line.partition('=')
+                if key.strip() in KEYS:
+                    entry[key.strip()] = value.strip()
+    return entry
 
 
 def to_app(path):
     entry = read_entry(path)
-    if entry is None or entry.get('NoDisplay', 'false').lower() == 'true' or not entry.get('Name'):
+    if entry.get('NoDisplay', 'false').lower() == 'true' or not entry.get('Name'):
         return None
     app_id = os.path.basename(path).removesuffix('.desktop')
-    icon = entry.get('Icon', '') or app_id.lower()
+    icon = entry.get('Icon') or app_id.lower()
     return {
         'id': app_id,
         'name': entry['Name'],
@@ -53,7 +58,8 @@ def main():
                 apps.setdefault(app['name'], app)  # first match wins
 
     result = sorted(apps.values(), key=lambda a: a['name'].lower())
-    print(json.dumps(result, indent=4, ensure_ascii=False))
+    print(json.dumps(result, separators=(',', ':'), ensure_ascii=False))
+
 
 if __name__ == '__main__':
     main()

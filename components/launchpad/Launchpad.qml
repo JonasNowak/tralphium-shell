@@ -13,7 +13,7 @@ Overlay {
     readonly property string query: searchInput.text.trim().toLowerCase()
     
     property bool showHiddenApps: false
-    property int _hiddenCount: HiddenApps.apps.count
+    property int _hiddenCount: HiddenApps.count
 
     readonly property var visibleApps: {
         var dummy = _hiddenCount; // force dependency

@@ -3,8 +3,8 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import qs.themes
-
 import qs.widgets
+import qs.services
 
 // Bottom shelf: launcher button, centered taskbar and status area.
 PanelWindow {
@@ -92,7 +92,7 @@ PanelWindow {
                 icon: "terminal"
                 text: "Terminal"
                 onClicked: {
-                    Quickshell.execDetached(["kitty"]);
+                    Config.launchTerminal();
                     shelfContextMenu.visible = false;
                 }
             }
@@ -100,7 +100,7 @@ PanelWindow {
                 icon: "speed"
                 text: "Task Manager"
                 onClicked: {
-                    Quickshell.execDetached(["kitty", "-e", "btop"]);
+                    Config.launchTaskManager();
                     shelfContextMenu.visible = false;
                 }
             }
@@ -108,13 +108,13 @@ PanelWindow {
                 icon: "folder"
                 text: "Files"
                 onClicked: {
-                    Quickshell.execDetached(["kitty", "-e", "yazi"]);
+                    Config.launchFileManager();
                     shelfContextMenu.visible = false;
                 }
             }
             MenuItem {
                 icon: "space_dashboard"
-                text: "Toggle Top Bar"
+                text: Config.topBar ? "Hide Top Bar" : "Show Top Bar"
                 onClicked: {
                     root.toggleTopBarClicked();
                     shelfContextMenu.visible = false;

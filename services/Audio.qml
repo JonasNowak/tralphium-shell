@@ -1,64 +1,53 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import Quickshell.Services.Pipewire
 
-// Default sink volume and sink selection via WirePlumber (wpctl).
+// Default sink volume and sink selection through PipeWire (event driven, no processes).
 Singleton {
     id: root
 
-    property real volume: 0.5
-    property bool isMuted: false
-    property var sinks: [] // [{ id, name, isDefault }]
+    readonly property PwNode sink: Pipewire.defaultAudioSink
+    readonly property real volume: sink && sink.audio ? sink.audio.volume : 0
+    readonly property bool isMuted: sink && sink.audio ? sink.audio.muted : false
+    
+    // Returns sinks in a format compatible with ControlPanel ({ id, name, isDefault, node })
+    readonly property var sinks: {
+        const raw = Pipewire.nodes.values.filter(n => n.isSink && !n.isStream && n.audio);
+        return raw.map(n => ({
+            id: n.id,
+            node: n,
+            name: n.description || n.nickname || n.name,
+            isDefault: Boolean(root.sink && root.sink.id === n.id)
+        }));
+    }
 
-    function refresh() { volumeReader.running = true; }
-    function refreshSinks() { sinkReader.running = true; }
+    // Nodes only expose their audio properties while tracked
+    PwObjectTracker {
+        objects: [root.sink].concat(Pipewire.nodes.values.filter(n => n.isSink && !n.isStream && n.audio))
+    }
+
+    // Compatibility functions for callers expecting refresh methods
+    function refresh() {}
+    function refreshSinks() {}
 
     function setVolume(value) {
-        volume = value;
-        Quickshell.execDetached(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", Math.round(value * 100) + "%"]);
-        if (isMuted) {
-            isMuted = false;
-            Quickshell.execDetached(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "0"]);
-        }
+        if (!sink || !sink.audio) return;
+        sink.audio.volume = value;
+        sink.audio.muted = false;
     }
 
     function toggleMute() {
-        isMuted = !isMuted;
-        Quickshell.execDetached(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", isMuted ? "1" : "0"]);
+        if (sink && sink.audio) sink.audio.muted = !sink.audio.muted;
     }
 
-    function setDefaultSink(id) {
-        Quickshell.execDetached(["wpctl", "set-default", id]);
-        root.sinks = root.sinks.map(s => Object.assign({}, s, { isDefault: s.id === id }));
-        refreshSinks();
-    }
-
-    Process {
-        id: volumeReader
-        running: true
-        command: ["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const match = this.text.match(/Volume:\s*([\d.]+)/);
-                if (match) root.volume = parseFloat(match[1]);
-                root.isMuted = this.text.indexOf("[MUTED]") !== -1;
-            }
-        }
-    }
-
-    // Outputs one "id|isDefault|name" line per sink
-    Process {
-        id: sinkReader
-        running: true
-        command: [Quickshell.shellPath("etc/get_sinks.sh")]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.sinks = this.text.trim().split("\n")
-                    .map(line => line.split("|"))
-                    .filter(parts => parts.length >= 3)
-                    .map(parts => ({ id: parts[0].trim(), isDefault: parts[1].trim() === "1", name: parts[2].trim() }));
-            }
+    function setDefaultSink(target) {
+        if (!target) return;
+        if (typeof target === "object" && target.isSink) {
+            Pipewire.preferredDefaultAudioSink = target;
+        } else {
+            const found = Pipewire.nodes.values.find(n => n.id === target || n.id === parseInt(target));
+            if (found) Pipewire.preferredDefaultAudioSink = found;
         }
     }
 }

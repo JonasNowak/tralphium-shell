@@ -3,90 +3,62 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// App IDs pinned to the taskbar (case-insensitive).
+// App IDs pinned to the taskbar (case-insensitive), persisted in ~/.config/tralphium/pins.json.
 Singleton {
     id: root
 
     property alias apps: appsModel
+    // Lower-cased ids, replaced on every change so bindings calling isPinned() re-evaluate
+    property var _keys: []
 
-    ListModel {
-        id: appsModel
+    ListModel { id: appsModel }
+
+    function isPinned(appId) { return !!appId && _keys.includes(appId.toLowerCase()); }
+
+    // Rebuilds the lookup table from the model and optionally persists it
+    function _changed(save) {
+        const ids = [];
+        for (let i = 0; i < appsModel.count; i++) ids.push(appsModel.get(i).appId);
+        _keys = ids.map(id => id.toLowerCase());
+        if (save) file.setText(JSON.stringify(ids));
     }
 
-    function isPinned(appId) {
-        if (!appId) return false;
-        const id = appId.toLowerCase();
-        for (let i = 0; i < appsModel.count; i++) {
-            if (appsModel.get(i).appId.toLowerCase() === id) return true;
-        }
-        return false;
+    function insertPin(appId, index) {
+        if (!appId) return;
+        const existing = _keys.indexOf(appId.toLowerCase());
+        if (existing !== -1) appsModel.move(existing, index, 1);
+        else appsModel.insert(Math.min(index, appsModel.count), { appId: appId });
+        _changed(true);
     }
 
-    function save() {
-        let arr = [];
-        for (let i = 0; i < appsModel.count; i++) {
-            arr.push(appsModel.get(i).appId);
-        }
-        const json = JSON.stringify(arr).replace(/'/g, "'\\''");
-        Quickshell.execDetached(["sh", "-c", "mkdir -p ~/.config/tralphium && echo '" + json + "' > ~/.config/tralphium/pins.json"]);
+    function toggle(appId) {
+        if (!appId) return;
+        const existing = _keys.indexOf(appId.toLowerCase());
+        if (existing !== -1) appsModel.remove(existing, 1);
+        else appsModel.append({ appId: appId });
+        _changed(true);
     }
 
     function move(fromIndex, toIndex) {
         if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= appsModel.count || toIndex >= appsModel.count) return;
         appsModel.move(fromIndex, toIndex, 1);
-        save();
+        _changed(true);
     }
 
-    function insertPin(appId, index) {
-        if (!appId) return;
-        const id = appId.toLowerCase();
-        
-        let existingIdx = -1;
-        for (let i = 0; i < appsModel.count; i++) {
-            if (appsModel.get(i).appId.toLowerCase() === id) {
-                existingIdx = i;
-                break;
-            }
+    FileView {
+        id: file
+        path: Quickshell.env("HOME") + "/.config/tralphium/pins.json"
+        printErrors: false
+        onLoaded: {
+            try {
+                const loaded = JSON.parse(text());
+                if (!Array.isArray(loaded)) return;
+                appsModel.clear();
+                loaded.forEach(appId => appsModel.append({ appId: appId }));
+                root._changed(false);
+            } catch (e) {}
         }
-        
-        if (existingIdx !== -1) {
-            appsModel.move(existingIdx, index, 1);
-        } else {
-            if (index > appsModel.count) index = appsModel.count;
-            appsModel.insert(index, { appId: appId });
-        }
-        save();
-    }
-
-    function toggle(appId) {
-        if (!appId) return;
-        const id = appId.toLowerCase();
-        if (isPinned(appId)) {
-            for (let i = 0; i < appsModel.count; i++) {
-                if (appsModel.get(i).appId.toLowerCase() === id) {
-                    appsModel.remove(i, 1);
-                    break;
-                }
-            }
-        } else {
-            appsModel.append({ appId: appId });
-        }
-        save();
-    }
-
-    Process {
-        command: ["cat", Quickshell.env("HOME") + "/.config/tralphium/pins.json"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    const loaded = JSON.parse(this.text.trim());
-                    if (Array.isArray(loaded)) {
-                        appsModel.clear();
-                        loaded.forEach(a => appsModel.append({ appId: a }));
-                    }
-                } catch(e) {}
-            }
-        }
+        // First run: make sure the config directory exists before the first save
+        onLoadFailed: Quickshell.execDetached(["mkdir", "-p", Quickshell.env("HOME") + "/.config/tralphium"])
     }
 }

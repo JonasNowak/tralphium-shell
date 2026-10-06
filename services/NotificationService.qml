@@ -8,11 +8,23 @@ Singleton {
 
     property alias server: notifServer
     property ListModel toasts: ListModel {}
-    property bool notificationsEnabled: true
+    property bool notificationsEnabled: Config.notificationsEnabled
     
     onNotificationsEnabledChanged: {
         if (!notificationsEnabled) {
             toasts.clear();
+        }
+        if (Config.notificationsEnabled !== notificationsEnabled) {
+            Config.setNotificationsEnabled(notificationsEnabled);
+        }
+    }
+
+    Connections {
+        target: Config
+        function onNotificationsEnabledChanged() {
+            if (root.notificationsEnabled !== Config.notificationsEnabled) {
+                root.notificationsEnabled = Config.notificationsEnabled;
+            }
         }
     }
 

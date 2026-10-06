@@ -1,17 +1,82 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import qs.services
 
 // Global theme access: `import qs.themes` then use e.g. `Theme.textForeground`.
 Singleton {
     id: root
 
-    // Change this to switch themes: "nord" or "cappuccino"
-    property string activeThemeName: "nord"
+    // Synchronized with ~/.config/tralphium/config.json via Config service
+    property string activeThemeName: Config.theme
+
+    Connections {
+        target: Config
+        function onThemeChanged() {
+            if (root.activeThemeName !== Config.theme) {
+                root.activeThemeName = Config.theme;
+            }
+        }
+    }
+
+    function colorToMango(c) {
+        let r = Math.round(c.r * 255).toString(16).padStart(2, '0');
+        let g = Math.round(c.g * 255).toString(16).padStart(2, '0');
+        let b = Math.round(c.b * 255).toString(16).padStart(2, '0');
+        let a = Math.round(c.a * 255).toString(16).padStart(2, '0');
+        return "0x" + r + g + b + a;
+    }
+
+    function syncMangoTheme() {
+        let content = "rootcolor=" + colorToMango(shelfBackground) + "\\n" +
+                      "bordercolor=" + colorToMango(alpha(buttonHover, 1.0)) + "\\n" +
+                      "dropcolor=" + colorToMango(alpha(accent, 0.5)) + "\\n" +
+                      "splitcolor=" + colorToMango(accent) + "\\n" +
+                      "focuscolor=" + colorToMango(accent) + "\\n" +
+                      "maximizescreencolor=" + colorToMango(accent) + "\\n" +
+                      "urgentcolor=" + colorToMango(danger) + "\\n" +
+                      "scratchpadcolor=" + colorToMango(textForeground) + "\\n" +
+                      "globalcolor=" + colorToMango(accent) + "\\n" +
+                      "overlaycolor=" + colorToMango(alpha(accent, 0.8)) + "\\n";
+        
+        let cmd = "echo -e '" + content + "' > ~/.config/mango/theme.conf && python3 " + Quickshell.env("HOME") + "/repos/tralphium/etc/mango_reload.py";
+        Quickshell.execDetached(["sh", "-c", cmd]);
+    }
+
+    onActiveThemeNameChanged: {
+        if (Config.theme !== activeThemeName) {
+            Config.setTheme(activeThemeName);
+        }
+        syncMangoTheme();
+    }
+
+    Component.onCompleted: {
+        syncMangoTheme();
+    }
+
+    function setTheme(name) {
+        Config.setTheme(name);
+    }
 
     readonly property ThemePalette nord: Nord {}
-    readonly property ThemePalette cappuccino: Cappuccino {}
-    readonly property ThemePalette current: activeThemeName === "cappuccino" ? cappuccino : nord
+    readonly property ThemePalette catppuccinMocha: CatppuccinMocha {}
+    readonly property ThemePalette catppuccinMacchiato: CatppuccinMacchiato {}
+    readonly property ThemePalette catppuccinFrappe: CatppuccinFrappe {}
+    readonly property ThemePalette catppuccinLatte: CatppuccinLatte {}
+    readonly property ThemePalette kanagawa: Kanagawa {}
+    readonly property ThemePalette oneDark: OneDark {}
+    readonly property ThemePalette oneLight: OneLight {}
+
+    readonly property ThemePalette current: {
+        if (activeThemeName === "catppuccin-mocha") return catppuccinMocha;
+        if (activeThemeName === "catppuccin-macchiato") return catppuccinMacchiato;
+        if (activeThemeName === "catppuccin-frappe") return catppuccinFrappe;
+        if (activeThemeName === "catppuccin-latte") return catppuccinLatte;
+        if (activeThemeName === "kanagawa") return kanagawa;
+        if (activeThemeName === "one-dark") return oneDark;
+        if (activeThemeName === "one-light") return oneLight;
+        return nord;
+    }
 
     // Palette colors of the active theme
     readonly property color shelfBackground: current.shelfBackground

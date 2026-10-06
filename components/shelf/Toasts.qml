@@ -1,12 +1,14 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 import qs.services
 import qs.themes
 import qs.widgets
 
 PanelWindow {
     id: root
+    WlrLayershell.layer: WlrLayer.Overlay
     
     anchors {
         bottom: true
@@ -18,9 +20,9 @@ PanelWindow {
         right: 4
     }
 
-    width: 380
+    implicitWidth: 380
     // Perfectly wrap the list height so the window bounds adapt exactly to the toasts
-    height: listView.contentHeight
+    implicitHeight: listView.contentHeight
     color: "transparent"
 
     ListView {
@@ -60,69 +62,55 @@ PanelWindow {
                 if (isDismissing) return;
                 isDismissing = true;
                 toastTimer.stop();
-                
-                // Continue sliding smoothly off-screen to the right
-                flickOutAnim.to = 0;
-                flickOutAnim.start();
+                model.notif.dismiss();
+                NotificationService.toasts.remove(index);
             }
 
-            NumberAnimation {
-                id: flickOutAnim
-                target: flickable
-                property: "contentX"
-                duration: 200
-                easing.type: Easing.OutCubic
-                onFinished: {
-                    model.notif.dismiss();
-                    NotificationService.toasts.remove(index);
-                }
+            function timeoutToast() {
+                if (isDismissing) return;
+                isDismissing = true;
+                NotificationService.toasts.remove(index);
             }
 
             Timer {
                 id: toastTimer
                 interval: 4000
                 running: true
-                onTriggered: delegateRoot.performDismiss()
+                onTriggered: delegateRoot.timeoutToast()
             }
 
-            Flickable {
-                id: flickable
+            Item {
+                id: dragContainer
                 anchors.fill: parent
-                contentWidth: parent.width * 2
-                contentX: parent.width
-                flickableDirection: Flickable.HorizontalFlick
-                boundsBehavior: Flickable.StopAtBounds
-                
-                onContentXChanged: {
-                    if (isDismissing) return;
-                    if (parent.width - contentX > 80) {
-                        delegateRoot.performDismiss();
-                    }
-                }
-                
-                onMovementEnded: {
-                    if (!isDismissing) {
-                        snapAnim.restart();
-                    }
-                }
-                
-                NumberAnimation {
-                    id: snapAnim
-                    target: flickable
-                    property: "contentX"
-                    to: delegateRoot.width
-                    duration: 250
-                    easing.type: Easing.OutBack
-                }
 
                 Item {
-                    width: flickable.contentWidth
-                    height: flickable.height
+                    anchors.fill: parent
 
                     Card {
                         id: notifCard
-                        x: delegateRoot.width
                         width: delegateRoot.width
+
+                        MouseArea {
+                            anchors.fill: parent
+                            acceptedButtons: Qt.NoButton
+                            onWheel: (wheel) => {
+                                // Downward scroll corresponds to negative angleDelta.y usually
+                                if (wheel.angleDelta.y < -10 || wheel.angleDelta.y > 10) {
+                                    if (!swipeDownAnim.running) {
+                                        swipeDownAnim.start();
+                                    }
+                                }
+                            }
+                        }
+
+                        NumberAnimation on y {
+                            id: swipeDownAnim
+                            to: 100
+                            duration: 200
+                            easing.type: Easing.InCubic
+                            running: false
+                            onFinished: delegateRoot.timeoutToast()
+                        }
                         implicitHeight: notifRow.implicitHeight + 24
                         
                         color: "#f8f9fa"
@@ -202,8 +190,7 @@ PanelWindow {
                                         onClicked: {
                                             let p = model.notif.image || model.notif.icon || "";
                                             if (p.startsWith("file://")) p = p.substring(7);
-                                            Quickshell.execDetached(["sh", "-c", "echo '" + p + "' >> /tmp/gimp_debug.txt"]);
-                                            Quickshell.execDetached(["gimp", p]);
+                                            Config.launchImageEditor(p);
                                             delegateRoot.performDismiss();
                                         }
                                     }
@@ -212,14 +199,14 @@ PanelWindow {
                                         onClicked: {
                                             let p = model.notif.image || model.notif.icon || "";
                                             if (p.startsWith("file://")) p = p.substring(7);
-                                            Quickshell.execDetached(["localsend", p]);
+                                            Config.launchShare(p);
                                             delegateRoot.performDismiss();
                                         }
                                     }
                                     ActionButton {
                                         text: "AI"
                                         onClicked: {
-                                            Quickshell.execDetached(["helium-browser", "https://gemini.google.com/"]);
+                                            Config.launchBrowser("https://gemini.google.com/");
                                             delegateRoot.performDismiss();
                                         }
                                     }

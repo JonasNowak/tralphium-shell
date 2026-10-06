@@ -40,12 +40,41 @@ The shell is split into feature modules, reusable widgets and non-visual service
 - **`etc/`**: Helper scripts (`list_apps.py`, `get_sinks.sh`).
 
 
-## Theming
+## Configuration
 
-To change the active theme, open `themes/Theme.qml` and modify the `activeThemeName` property:
+All Tralphium settings live in a single unified configuration file:
+`~/.config/tralphium/config.json`
 
-```qml
-property string activeThemeName: "cappuccino" // or "nord"
+Changes made in the shell (such as toggling the menu bar, switching themes, pinning/hiding apps, or updating notification settings) are **automatically saved to this file**, and changes made directly to `config.json` on disk are **hot-reloaded immediately** in the running shell.
+
+### Example `config.json`:
+```json
+{
+  "theme": "nord",
+  "menuBar": false,
+  "apps": {
+    "terminal": "kitty",
+    "fileManager": "kitty -e yazi",
+    "taskManager": "kitty -e btop",
+    "editor": "kitty -e vim",
+    "browser": "helium-browser",
+    "imageEditor": "gimp",
+    "share": "localsend",
+    "networkManager": "kitty -e nmtui",
+    "bluetoothManager": "kitty -e bluetui"
+  },
+  "notifications": {
+    "enabled": true
+  }
+}
+```
+
+### Theming
+
+To switch themes, change `"theme"` in `~/.config/tralphium/config.json` (`"nord"` or `"cappuccino"`), use the Theme toggle in the Control Panel or Shelf context menu, or run:
+```bash
+qs ipc call shell toggleTheme
+# or: qs ipc call shell setTheme cappuccino
 ```
 
 To create a new theme:

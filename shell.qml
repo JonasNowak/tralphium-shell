@@ -6,6 +6,7 @@ import qs.components.launchpad
 import qs.components.controlpanel
 import qs.components.powermenu
 import qs.components.topbar
+import qs.components.settings
 import qs.services
 
 // Entry point: wires the shell's top-level surfaces together.
@@ -13,10 +14,8 @@ import qs.services
 ShellRoot {
     id: shellRoot
     
-    // Feature toggle for the optional Googlebook style top bar
-    property bool enableTopBar: false
-
-
+    // Feature toggle for the optional Googlebook style top bar, synced via Config
+    property bool enableTopBar: Config.topBar
 
     TopBar {
         visible: shellRoot.enableTopBar
@@ -38,7 +37,7 @@ ShellRoot {
             launchpad.close();
         }
         onToggleTopBarClicked: {
-            shellRoot.enableTopBar = !shellRoot.enableTopBar;
+            Config.toggleTopBar();
         }
     }
 
@@ -47,12 +46,15 @@ ShellRoot {
     ControlPanel {
         id: controlPanel
         onPowerMenuRequested: powerMenu.open()
+        onSettingsRequested: settingsWindow.open()
     }
     
     Toasts {
     }
 
     PowerMenu { id: powerMenu }
+    
+    SettingsWindow { id: settingsWindow }
 
     // e.g. bind a key to: qs ipc call shell toggleLaunchpad
     IpcHandler {
@@ -70,6 +72,18 @@ ShellRoot {
         }
         function takeScreenshot() {
             Screenshot.take();
+        }
+        function toggleTopBar() {
+            Config.toggleTopBar();
+        }
+        function toggleTheme() {
+            Config.toggleTheme();
+        }
+        function setTheme(themeName: string) {
+            Config.setTheme(themeName);
+        }
+        function reloadConfig() {
+            Config.reload();
         }
     }
 }

@@ -22,22 +22,27 @@ Singleton {
         return capacity + "% left";
     }
 
-    function refresh() { reader.running = true; }
+    function refresh() {
+        capacityFile.reload();
+        statusFile.reload();
+    }
 
-    Process {
-        id: reader
-        running: true
-        command: ["cat", root.sysfsPath + "/capacity", root.sysfsPath + "/status"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const lines = this.text.trim().split("\n");
-                root.available = lines.length >= 2;
-                if (root.available) {
-                    root.capacity = parseInt(lines[0]) || 100;
-                    root.status = lines[1].trim();
-                }
-            }
+    FileView {
+        id: capacityFile
+        path: root.sysfsPath + "/capacity"
+        printErrors: false
+        onLoaded: {
+            root.capacity = parseInt(text()) || 100;
+            root.available = true;
         }
+        onLoadFailed: root.available = false
+    }
+
+    FileView {
+        id: statusFile
+        path: root.sysfsPath + "/status"
+        printErrors: false
+        onLoaded: root.status = text().trim()
     }
 
     Timer {

@@ -11,29 +11,42 @@ Singleton {
 
     property int max: 1808
     property int current: 1808
+    property int _applied: 1808 // last value handed to macbook-lighter-screen
     readonly property real value: max > 0 ? current / max : 0
 
-    function refresh() { reader.running = true; }
+    function refresh() { currentFile.reload(); }
 
-    // `fraction` is 0..1; macbook-lighter-screen only supports relative steps
+    // `fraction` is 0..1. macbook-lighter-screen only supports relative steps and every call
+    // is a process, so while dragging a slider the changes are coalesced (at most one per 50 ms).
     function set(fraction) {
-        const target = Math.round(fraction * max);
-        const diff = target - current;
-        if (diff !== 0)
-            Quickshell.execDetached(["macbook-lighter-screen", diff > 0 ? "--inc" : "--dec", Math.abs(diff).toString()]);
-        current = target;
+        current = Math.round(fraction * max);
+        applyTimer.start();
     }
 
-    Process {
-        id: reader
-        running: true
-        command: ["cat", root.sysfsPath + "/max_brightness", root.sysfsPath + "/brightness"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const [max, current] = this.text.trim().split("\n").map(v => parseInt(v));
-                if (!isNaN(max)) root.max = max;
-                if (!isNaN(current)) root.current = current;
-            }
+    Timer {
+        id: applyTimer
+        interval: 50
+        onTriggered: {
+            const diff = root.current - root._applied;
+            if (diff !== 0)
+                Quickshell.execDetached(["macbook-lighter-screen", diff > 0 ? "--inc" : "--dec", Math.abs(diff).toString()]);
+            root._applied = root.current;
+        }
+    }
+
+    FileView {
+        path: root.sysfsPath + "/max_brightness"
+        printErrors: false
+        onLoaded: root.max = parseInt(text()) || root.max
+    }
+
+    FileView {
+        id: currentFile
+        path: root.sysfsPath + "/brightness"
+        printErrors: false
+        onLoaded: {
+            const v = parseInt(text());
+            if (!isNaN(v)) root.current = root._applied = v;
         }
     }
 }
