@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
@@ -6,18 +7,19 @@ import qs.services
 import qs.themes
 import qs.widgets
 
-Overlay {
+Window {
     id: root
-    
-    // Consume clicks to close when clicking outside the card
-    onBackgroundClicked: close()
+    title: "Settings"
+    width: 900
+    height: 700
+    color: Theme.panelBackground
+
+    function open() {
+        show();
+        requestActivate();
+    }
 
     property int currentTab: 0
-    Card {
-        width: 900
-        height: 700
-        anchors.centerIn: parent
-        onClicked: {} // Consume clicks inside the window so it doesn't close
 
         RowLayout {
             anchors.fill: parent
@@ -434,5 +436,4 @@ Overlay {
                 }
             }
         }
-    }
 }
