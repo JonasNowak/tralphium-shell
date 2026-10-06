@@ -14,8 +14,8 @@ Overlay {
 
     property int currentTab: 0
     Card {
-        width: 800
-        height: 600
+        width: 900
+        height: 700
         anchors.centerIn: parent
         onClicked: {} // Consume clicks inside the window so it doesn't close
 
@@ -55,20 +55,47 @@ Overlay {
 
                     Repeater {
                         model: [
-                            { name: "Shell", icon: "terminal" }
+                            { name: "Network", icon: "wifi" },
+                            { name: "Bluetooth", icon: "bluetooth" },
+                            { name: "Connected devices", icon: "devices" },
+                            { name: "Accounts", icon: "person" },
+                            { name: "Device", icon: "computer" },
+                            { name: "Personalization", icon: "edit" },
+                            { name: "Search and Assistant", icon: "search" },
+                            { name: "Apps", icon: "apps" },
+                            { name: "About this system", icon: "" }
                         ]
-                        delegate: Rectangle {
+                        delegate: ColumnLayout {
                             Layout.fillWidth: true
-                            implicitHeight: 48
-                            radius: 24
-                            color: root.currentTab === index ? Theme.alpha(Theme.activeTint, 0.2) : "transparent"
+                            spacing: 0
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 1
+                                color: Theme.alpha(Theme.textForeground, 0.1)
+                                visible: modelData.name === "About this system"
+                                Layout.topMargin: 8
+                                Layout.bottomMargin: 8
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                implicitHeight: 48
+                                radius: 24
+                                color: root.currentTab === index ? Theme.alpha(Theme.activeTint, 0.2) : "transparent"
                             
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.leftMargin: 16
                                 anchors.rightMargin: 16
                                 spacing: 12
-                                MaterialIcon { text: modelData.icon; color: root.currentTab === index ? Theme.accent : Theme.textForeground; font.pixelSize: 22 }
+                                MaterialIcon {
+                                    text: modelData.icon !== "" ? modelData.icon : "circle";
+                                    color: root.currentTab === index ? Theme.accent : Theme.textForeground;
+                                    font.pixelSize: 22
+                                    opacity: modelData.icon !== "" ? 1 : 0
+                                    Layout.preferredWidth: 22
+                                }
                                 Text { 
                                     text: modelData.name
                                     color: root.currentTab === index ? Theme.accent : Theme.textForeground
@@ -76,10 +103,17 @@ Overlay {
                                     font.bold: true
                                     Layout.fillWidth: true
                                 }
+                                MaterialIcon {
+                                    text: "expand_more"
+                                    color: Theme.textForeground
+                                    font.pixelSize: 22
+                                    visible: modelData.name === "Advanced"
+                                }
                             }
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: root.currentTab = index
+                            }
                             }
                         }
                     }
@@ -109,14 +143,26 @@ Overlay {
 
                     Item {
                         Layout.fillWidth: true
-                        Layout.fillHeight: true
                     }
 
-                    IconButton {
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.maximumWidth: 600
+                        Layout.preferredHeight: 48
                         Layout.alignment: Qt.AlignVCenter
-                        Layout.rightMargin: 16
-                        icon: "close"
-                        onClicked: root.close()
+                        radius: 24
+                        color: Theme.alpha(Theme.buttonHover, 0.1)
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 16
+                            spacing: 12
+                            MaterialIcon { text: "search"; color: Theme.textForeground; font.pixelSize: 20 }
+                            Text { text: "Search settings"; color: Theme.textSecondary; font.pixelSize: 14 }
+                        }
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
                     }
                 }
 
@@ -125,7 +171,12 @@ Overlay {
                     Layout.fillHeight: true
                     currentIndex: root.currentTab
 
-                    // Tab 0: Shell Settings
+                    Item {} // 0: Network
+                    Item {} // 1: Bluetooth
+                    Item {} // 2: Connected devices
+                    Item {} // 3: Accounts
+                    Item {} // 4: Device
+                    // Tab 5: Personalization (formerly Shell)
                     ScrollView {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -377,7 +428,9 @@ Overlay {
                             Item { height: 32 } // Bottom padding
                         }
                     }
-
+                    Item {} // 6: Search and Assistant
+                    Item {} // 7: Apps
+                    Item {} // 8: About this system
                 }
             }
         }
