@@ -14,7 +14,8 @@ Rectangle {
     implicitWidth: 36
     implicitHeight: 36
     radius: width / 2
-    color: hovered ? Theme.hover : baseColor
+    property bool isActive: false
+    color: (hovered || isActive) ? Theme.hover : baseColor
 
     MaterialIcon { id: glyph; anchors.centerIn: parent }
 

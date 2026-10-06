@@ -12,6 +12,9 @@ PanelWindow {
     signal launcherClicked()
     signal statusClicked()
     signal backgroundClicked()
+    signal toggleTopBarClicked()
+
+    property alias launcherActive: launcherBtn.isActive
 
     anchors {
         bottom: true
@@ -49,8 +52,14 @@ PanelWindow {
             anchors.rightMargin: 8
             spacing: 8
 
-            LauncherButton { onClicked: root.launcherClicked() }
+            LauncherButton {
+                id: launcherBtn
+                onClicked: root.launcherClicked()
+            }
             Item { Layout.fillWidth: true }
+            
+
+            
             StatusArea { onClicked: root.statusClicked() }
         }
 
@@ -96,6 +105,14 @@ PanelWindow {
                 text: "Files"
                 onClicked: {
                     Quickshell.execDetached(["kitty", "-e", "yazi"]);
+                    shelfContextMenu.visible = false;
+                }
+            }
+            MenuItem {
+                icon: "space_dashboard"
+                text: "Toggle Top Bar"
+                onClicked: {
+                    root.toggleTopBarClicked();
                     shelfContextMenu.visible = false;
                 }
             }
