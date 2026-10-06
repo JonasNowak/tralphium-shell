@@ -15,6 +15,7 @@ PanelWindow {
     signal toggleTopBarClicked()
 
     property alias launcherActive: launcherBtn.isActive
+    property alias statusActive: statusArea.isActive
 
     anchors {
         bottom: true
@@ -60,7 +61,10 @@ PanelWindow {
             
 
             
-            StatusArea { onClicked: root.statusClicked() }
+            StatusArea {
+                id: statusArea
+                onClicked: root.statusClicked()
+            }
         }
 
         Taskbar {

@@ -24,6 +24,7 @@ ShellRoot {
 
     Shelf {
         launcherActive: launchpad.visible
+        statusActive: controlPanel.visible
         onLauncherClicked: {
             controlPanel.close();
             launchpad.toggle();

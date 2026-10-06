@@ -5,56 +5,98 @@ import qs.themes
 import qs.widgets
 import qs.services
 
-// Pill on the right of the shelf: network, battery and clock.
-Rectangle {
+// Pills on the right of the shelf: date, and network/battery/clock.
+RowLayout {
     id: root
     signal clicked()
+    spacing: 3.5
 
-    implicitHeight: 36
-    implicitWidth: row.implicitWidth + 32
-    radius: 18
-    color: mouse.containsMouse ? Theme.hover : Theme.alpha(Theme.buttonHover, 0.3)
+    readonly property bool isHovered: dateMouse.containsMouse || mainMouse.containsMouse
+
+    property bool isActive: false
+    readonly property bool _highlight: isHovered || isActive
 
     SystemClock { id: clock; precision: SystemClock.Minutes }
 
-    RowLayout {
-        id: row
-        anchors.centerIn: parent
-        spacing: 12
+    Rectangle {
+        id: datePill
+        implicitHeight: 36
+        implicitWidth: dateText.implicitWidth + 24
         
+        topLeftRadius: 18
+        bottomLeftRadius: 18
+        topRightRadius: 4
+        bottomRightRadius: 4
+        
+        color: root._highlight ? Theme.hover : Theme.alpha(Theme.buttonHover, 0.3)
+
+        Text {
+            id: dateText
+            anchors.centerIn: parent
+            text: Qt.formatDate(clock.date, "MMM d")
+            color: Theme.textForeground
+            font.pixelSize: 13
+            font.bold: true
+        }
+
+        MouseArea {
+            id: dateMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: root.clicked()
+        }
+    }
+
+    Rectangle {
+        id: mainPill
+        implicitHeight: 36
+        implicitWidth: row.implicitWidth + 24
+        
+        topLeftRadius: 4
+        bottomLeftRadius: 4
+        topRightRadius: 18
+        bottomRightRadius: 18
+        
+        color: root._highlight ? Theme.hover : Theme.alpha(Theme.buttonHover, 0.3)
+
         RowLayout {
-            spacing: 4
-            visible: NotificationService.server.trackedNotifications.count > 0
-            
-            MaterialIcon { 
-                text: "notifications"
-                font.pixelSize: 16 
-            }
-            
+            id: row
+            anchors.centerIn: parent
+            spacing: 12
+
             Text {
-                text: NotificationService.server.trackedNotifications.count.toString()
+                text: Qt.formatTime(clock.date, "h:mm")
                 color: Theme.textForeground
                 font.pixelSize: 13
                 font.bold: true
             }
+
+            Rectangle {
+                visible: NotificationService.server.trackedNotifications.values.length > 0
+                width: 20
+                height: 20
+                radius: 10
+                color: Theme.textForeground
+                
+                Text {
+                    anchors.centerIn: parent
+                    text: NotificationService.server.trackedNotifications.values.length.toString()
+                    color: Theme.panelBackground
+                    font.pixelSize: 12
+                    font.bold: true
+                }
+            }
+
+            MaterialIcon { text: "wifi"; font.pixelSize: 16 }
+
+            BatteryIcon {}
         }
 
-        MaterialIcon { text: "wifi"; font.pixelSize: 16 }
-
-        BatteryIcon {}
-
-        Text {
-            text: Qt.formatTime(clock.date, "hh:mm")
-            color: Theme.textForeground
-            font.pixelSize: 14
-            font.bold: true
+        MouseArea {
+            id: mainMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: root.clicked()
         }
-    }
-
-    MouseArea {
-        id: mouse
-        anchors.fill: parent
-        hoverEnabled: true
-        onClicked: root.clicked()
     }
 }
