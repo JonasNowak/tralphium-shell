@@ -6,6 +6,7 @@ Rectangle {
     id: root
     property alias icon: glyph.text
     property alias iconSize: glyph.font.pixelSize
+    property alias iconColor: glyph.color
     property color baseColor: "transparent"
     readonly property alias hovered: mouse.containsMouse
     signal clicked()

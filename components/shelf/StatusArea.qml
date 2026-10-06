@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs.themes
 import qs.widgets
+import qs.services
 
 // Pill on the right of the shelf: network, battery and clock.
 Rectangle {
@@ -20,6 +21,23 @@ Rectangle {
         id: row
         anchors.centerIn: parent
         spacing: 12
+        
+        RowLayout {
+            spacing: 4
+            visible: NotificationService.server.trackedNotifications.count > 0
+            
+            MaterialIcon { 
+                text: "notifications"
+                font.pixelSize: 16 
+            }
+            
+            Text {
+                text: NotificationService.server.trackedNotifications.count.toString()
+                color: Theme.textForeground
+                font.pixelSize: 13
+                font.bold: true
+            }
+        }
 
         MaterialIcon { text: "wifi"; font.pixelSize: 16 }
 

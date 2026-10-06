@@ -3,7 +3,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// App IDs pinned to the taskbar (case-insensitive).
 Singleton {
     id: root
 
@@ -13,7 +12,7 @@ Singleton {
         id: appsModel
     }
 
-    function isPinned(appId) {
+    function isHidden(appId) {
         if (!appId) return false;
         const id = appId.toLowerCase();
         for (let i = 0; i < appsModel.count; i++) {
@@ -28,40 +27,13 @@ Singleton {
             arr.push(appsModel.get(i).appId);
         }
         const json = JSON.stringify(arr).replace(/'/g, "'\\''");
-        Quickshell.execDetached(["sh", "-c", "mkdir -p ~/.config/tralphium && echo '" + json + "' > ~/.config/tralphium/pins.json"]);
-    }
-
-    function move(fromIndex, toIndex) {
-        if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= appsModel.count || toIndex >= appsModel.count) return;
-        appsModel.move(fromIndex, toIndex, 1);
-        save();
-    }
-
-    function insertPin(appId, index) {
-        if (!appId) return;
-        const id = appId.toLowerCase();
-        
-        let existingIdx = -1;
-        for (let i = 0; i < appsModel.count; i++) {
-            if (appsModel.get(i).appId.toLowerCase() === id) {
-                existingIdx = i;
-                break;
-            }
-        }
-        
-        if (existingIdx !== -1) {
-            appsModel.move(existingIdx, index, 1);
-        } else {
-            if (index > appsModel.count) index = appsModel.count;
-            appsModel.insert(index, { appId: appId });
-        }
-        save();
+        Quickshell.execDetached(["sh", "-c", "mkdir -p ~/.config/tralphium && echo '" + json + "' > ~/.config/tralphium/hidden_apps.json"]);
     }
 
     function toggle(appId) {
         if (!appId) return;
         const id = appId.toLowerCase();
-        if (isPinned(appId)) {
+        if (isHidden(appId)) {
             for (let i = 0; i < appsModel.count; i++) {
                 if (appsModel.get(i).appId.toLowerCase() === id) {
                     appsModel.remove(i, 1);
@@ -75,7 +47,7 @@ Singleton {
     }
 
     Process {
-        command: ["cat", Quickshell.env("HOME") + "/.config/tralphium/pins.json"]
+        command: ["cat", Quickshell.env("HOME") + "/.config/tralphium/hidden_apps.json"]
         running: true
         stdout: StdioCollector {
             onStreamFinished: {

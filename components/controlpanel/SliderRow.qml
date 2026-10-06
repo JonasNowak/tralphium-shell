@@ -11,6 +11,7 @@ RowLayout {
     property alias trailingIcon: trailing.icon
     property real value
     signal moved(real value)
+    signal iconClicked()
     signal trailingClicked()
 
     Layout.fillWidth: true
@@ -24,8 +25,8 @@ RowLayout {
         id: leading
         implicitWidth: 32
         implicitHeight: 32
-        enabled: false
         baseColor: Theme.alpha(Theme.buttonHover, 0.3)
+        onClicked: root.iconClicked()
     }
 
     Slider {

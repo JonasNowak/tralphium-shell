@@ -5,15 +5,31 @@ import Quickshell
 import qs.services
 import qs.themes
 import qs.widgets
-import "AppList.js" as AppList
 
 // App launcher with search, web-search fallback and pin context menu.
 Overlay {
     id: root
 
     readonly property string query: searchInput.text.trim().toLowerCase()
-    readonly property var filteredApps: AppList.apps.filter(app =>
-        app.name.toLowerCase().includes(query) || app.id.toLowerCase().includes(query))
+    
+    property bool showHiddenApps: false
+    property int _hiddenCount: HiddenApps.apps.count
+
+    readonly property var visibleApps: {
+        var dummy = _hiddenCount; // force dependency
+        return Apps.apps.filter(app => {
+            let matchesSearch = app.name.toLowerCase().includes(query) || app.id.toLowerCase().includes(query);
+            if (!matchesSearch) return false;
+            if (query === "" && HiddenApps.isHidden(app.id)) return false;
+            return true;
+        });
+    }
+
+    readonly property var hiddenAppsList: {
+        var dummy = _hiddenCount; // force dependency
+        return Apps.apps.filter(app => HiddenApps.isHidden(app.id));
+    }
+    
     property string menuAppId: ""
 
     function launch(app) {
@@ -30,6 +46,7 @@ Overlay {
 
     onVisibleChanged: {
         if (!visible) return;
+        Apps.refresh();
         searchInput.text = "";
         searchInput.forceActiveFocus();
     }
@@ -82,8 +99,8 @@ Overlay {
                         }
 
                         onAccepted: {
-                            if (root.filteredApps.length > 0) {
-                                root.launch(root.filteredApps[0]);
+                            if (root.visibleApps.length > 0) {
+                                root.launch(root.visibleApps[0]);
                             } else if (text.trim()) {
                                 root.close();
                                 Qt.openUrlExternally("https://duckduckgo.com/?q=" + encodeURIComponent(text.trim()));
@@ -93,62 +110,33 @@ Overlay {
                 }
             }
 
-            GridView {
-                id: grid
+            ScrollView {
+                id: scrollView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
-                cellWidth: 110
-                cellHeight: 110
-                boundsBehavior: Flickable.StopAtBounds
-                ScrollBar.vertical: ScrollBar { active: true }
-                model: root.filteredApps
-
-                delegate: Item {
-                    width: grid.cellWidth
-                    height: grid.cellHeight
-
-                    Rectangle {
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        radius: 8
-                        color: mouse.containsMouse ? Theme.hover : "transparent"
-
-                        AppIcon {
-                            id: icon
-                            anchors.top: parent.top
-                            anchors.topMargin: 12
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            width: 48
-                            height: 48
-                            source: modelData.icon
-                            name: modelData.name
-                            initialsSize: 20
-                        }
-
-                        Text {
-                            anchors { top: icon.bottom; left: parent.left; right: parent.right; topMargin: 8; leftMargin: 4; rightMargin: 4 }
-                            text: modelData.name
-                            color: Theme.textForeground
-                            font.pixelSize: 13
-                            horizontalAlignment: Text.AlignHCenter
-                            elide: Text.ElideRight
-                        }
-
-                        MouseArea {
-                            id: mouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            acceptedButtons: Qt.LeftButton | Qt.RightButton
-                            onClicked: event => {
-                                if (event.button === Qt.RightButton) {
-                                    root.openMenu(modelData.id, mapToItem(null, event.x, event.y));
-                                } else {
-                                    appMenu.visible = false;
-                                    root.launch(modelData);
-                                }
-                            }
-                        }
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                
+                ColumnLayout {
+                    width: scrollView.availableWidth
+                    spacing: 24
+                    
+                    AppGrid {
+                        Layout.fillWidth: true
+                        model: root.visibleApps
+                        launch: root.launch
+                        openMenu: root.openMenu
+                    }
+                    
+                    AppDrawer {
+                        Layout.fillWidth: true
+                        visible: root.query === "" && root.hiddenAppsList.length > 0
+                        text: expanded ? "Hide hidden apps" : "Show hidden apps"
+                        expanded: root.showHiddenApps
+                        onExpandedChanged: root.showHiddenApps = expanded
+                        model: root.hiddenAppsList
+                        launch: root.launch
+                        openMenu: root.openMenu
                     }
                 }
             }
@@ -165,6 +153,16 @@ Overlay {
             text: pinned ? "Unpin" : "Pin"
             onClicked: {
                 Pins.toggle(root.menuAppId);
+                appMenu.visible = false;
+            }
+        }
+        
+        MenuItem {
+            readonly property bool hidden: HiddenApps.isHidden(root.menuAppId)
+            icon: hidden ? "visibility" : "visibility_off"
+            text: hidden ? "Unhide" : "Hide"
+            onClicked: {
+                HiddenApps.toggle(root.menuAppId);
                 appMenu.visible = false;
             }
         }

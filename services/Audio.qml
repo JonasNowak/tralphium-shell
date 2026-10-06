@@ -8,6 +8,7 @@ Singleton {
     id: root
 
     property real volume: 0.5
+    property bool isMuted: false
     property var sinks: [] // [{ id, name, isDefault }]
 
     function refresh() { volumeReader.running = true; }
@@ -16,6 +17,15 @@ Singleton {
     function setVolume(value) {
         volume = value;
         Quickshell.execDetached(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", Math.round(value * 100) + "%"]);
+        if (isMuted) {
+            isMuted = false;
+            Quickshell.execDetached(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "0"]);
+        }
+    }
+
+    function toggleMute() {
+        isMuted = !isMuted;
+        Quickshell.execDetached(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", isMuted ? "1" : "0"]);
     }
 
     function setDefaultSink(id) {
@@ -32,6 +42,7 @@ Singleton {
             onStreamFinished: {
                 const match = this.text.match(/Volume:\s*([\d.]+)/);
                 if (match) root.volume = parseFloat(match[1]);
+                root.isMuted = this.text.indexOf("[MUTED]") !== -1;
             }
         }
     }

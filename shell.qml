@@ -5,6 +5,7 @@ import qs.components.shelf
 import qs.components.launchpad
 import qs.components.controlpanel
 import qs.components.powermenu
+import qs.services
 
 // Entry point: wires the shell's top-level surfaces together.
 // The active theme is selected in themes/Theme.qml.
@@ -30,6 +31,10 @@ ShellRoot {
         id: controlPanel
         onPowerMenuRequested: powerMenu.open()
     }
+    
+    Toasts {
+        visible: !controlPanel.visible
+    }
 
     PowerMenu { id: powerMenu }
 
@@ -39,6 +44,9 @@ ShellRoot {
         function toggleLaunchpad() {
             controlPanel.close();
             launchpad.toggle();
+        }
+        function takeScreenshot() {
+            Screenshot.take();
         }
     }
 }

@@ -6,6 +6,7 @@ import qs.themes
 Rectangle {
     id: root
     signal clicked()
+    signal rightClicked(var mouse)
 
     color: Theme.panelBackground
     radius: Theme.panelRadius
@@ -14,6 +15,13 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: root.clicked()
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: (mouse) => {
+            if (mouse.button === Qt.RightButton) {
+                root.rightClicked(mouse)
+            } else {
+                root.clicked()
+            }
+        }
     }
 }

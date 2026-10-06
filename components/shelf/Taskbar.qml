@@ -61,15 +61,34 @@ Item {
         anchors.centerIn: parent
         spacing: 8
 
-        Repeater {
+        ListView {
+            id: pinnedList
+            implicitWidth: contentWidth
+            implicitHeight: 44
+            orientation: ListView.Horizontal
+            spacing: 8
+            interactive: false
+
+            displaced: Transition {
+                NumberAnimation { properties: "x,y"; duration: 200; easing.type: Easing.OutQuad }
+            }
+
             model: Pins.apps
             delegate: TaskButton {
                 id: pinned
-                readonly property var windows: root.windowsOf(modelData)
-                appId: modelData
-                name: root.capitalize(modelData)
+                readonly property int pinIndex: index
+                readonly property var windows: root.windowsOf(model.appId)
+                readonly property var resolvedApp: Apps.findApp(model.appId)
+                
+                onAppEntered: (draggedAppId) => {
+                    Pins.insertPin(draggedAppId, pinIndex);
+                }
+                
+                appId: model.appId
+                name: resolvedApp ? resolvedApp.name : root.capitalize(model.appId)
+                icon: resolvedApp ? resolvedApp.icon : ""
                 running: windows.length > 0
-                active: Boolean(ToplevelManager.activeToplevel && (ToplevelManager.activeToplevel.appId || "").toLowerCase() === modelData.toLowerCase())
+                active: Boolean(ToplevelManager.activeToplevel && (ToplevelManager.activeToplevel.appId || "").toLowerCase() === model.appId.toLowerCase())
                 onHoveredChanged: root.showTooltip(pinned, hovered)
                 onClicked: button => root.handleClick(pinned, button, windows.length > 0 ? windows[0] : null, () => {
                     if (pinned.running) {
@@ -90,8 +109,10 @@ Item {
             model: ToplevelManager.toplevels
             delegate: TaskButton {
                 id: task
+                readonly property var resolvedApp: Apps.findApp(modelData.appId || modelData.title)
                 appId: modelData.appId || ""
-                name: root.capitalize(modelData.appId || modelData.title || "?")
+                name: resolvedApp ? resolvedApp.name : root.capitalize(modelData.appId || modelData.title || "?")
+                icon: resolvedApp ? resolvedApp.icon : ""
                 visible: !Pins.isPinned(appId)
                 running: true
                 active: modelData.activated
