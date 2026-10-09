@@ -173,7 +173,288 @@ Window {
                     Layout.fillHeight: true
                     currentIndex: root.currentTab
 
-                    Item {} // 0: Network
+                    // 0: Network
+                    ScrollView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        contentWidth: availableWidth
+                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+                        ColumnLayout {
+                            width: parent.width - 64
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            spacing: 24
+                            
+                            Item { height: 8 } // Top padding
+
+                            Text {
+                                text: "Network"
+                                color: Theme.textForeground
+                                font.pixelSize: 14
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                implicitHeight: networkCol.implicitHeight
+                                color: Theme.alpha(Theme.buttonHover, 0.1)
+                                radius: 12
+                                border.color: Theme.alpha(Theme.textForeground, 0.1)
+                                border.width: 1
+
+                                ColumnLayout {
+                                    id: networkCol
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    spacing: 0
+
+                                    // Expandable Wi-Fi Section
+                                    Rectangle {
+                                        id: wifiHeader
+                                        Layout.fillWidth: true
+                                        implicitHeight: 72
+                                        color: wifiMouse.containsMouse ? Theme.hover : "transparent"
+                                        
+                                        property bool expanded: false
+                                        
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 16
+                                            spacing: 16
+                                            
+                                            MaterialIcon { text: Network.currentSsid !== "" ? "wifi" : "wifi_off"; color: Theme.textForeground; font.pixelSize: 24; Layout.alignment: Qt.AlignVCenter }
+                                            
+                                            ColumnLayout {
+                                                Layout.fillWidth: true
+                                                Layout.alignment: Qt.AlignVCenter
+                                                spacing: 4
+                                                Text { text: "Wi-Fi"; color: Theme.textForeground; font.pixelSize: 14; Layout.fillWidth: true }
+                                                Text { text: Network.currentSsid !== "" ? Network.currentSsid : "Not connected"; color: Theme.textSecondary; font.pixelSize: 12; Layout.fillWidth: true }
+                                            }
+                                            
+                                            MaterialIcon { text: wifiHeader.expanded ? "expand_less" : "expand_more"; color: Theme.textForeground; font.pixelSize: 24; Layout.alignment: Qt.AlignVCenter }
+                                        }
+                                        MouseArea {
+                                            id: wifiMouse
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onClicked: wifiHeader.expanded = !wifiHeader.expanded
+                                        }
+                                    }
+                                    
+                                    // Wi-Fi List
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        visible: wifiHeader.expanded
+                                        spacing: 0
+                                        
+                                        Repeater {
+                                            model: Network.networks
+                                            delegate: Rectangle {
+                                                Layout.fillWidth: true
+                                                implicitHeight: passwordField.visible ? 104 : 56
+                                                color: netMouse.containsMouse ? Theme.hover : "transparent"
+                                                
+                                                property bool isConnected: modelData.active
+                                                
+                                                RowLayout {
+                                                    anchors.fill: parent
+                                                    anchors.margins: 16
+                                                    spacing: 16
+                                                    
+                                                    MaterialIcon { 
+                                                        text: Network.getIcon(modelData.signal, modelData.security !== "")
+                                                        font.pixelSize: 24
+                                                        color: Theme.textForeground 
+                                                        Layout.alignment: Qt.AlignVCenter
+                                                    }
+                                                    
+                                                    ColumnLayout {
+                                                        Layout.fillWidth: true
+                                                        spacing: 2
+                                                        Text { text: modelData.ssid; color: Theme.textForeground; font.pixelSize: 14; font.bold: isConnected; Layout.fillWidth: true }
+                                                        Text { text: isConnected ? "Connected" : (modelData.security !== "" ? "Secured" : "Open"); color: Theme.textSecondary; font.pixelSize: 12; Layout.fillWidth: true }
+                                                    }
+                                                }
+                                                
+                                                // Password Field
+                                                RowLayout {
+                                                    id: passwordField
+                                                    visible: netMouse.showPassword
+                                                    anchors.left: parent.left
+                                                    anchors.right: parent.right
+                                                    anchors.bottom: parent.bottom
+                                                    anchors.leftMargin: 56
+                                                    anchors.rightMargin: 16
+                                                    anchors.bottomMargin: 8
+                                                    height: 32
+                                                    spacing: 8
+                                                    
+                                                    TextField {
+                                                        id: pwdInput
+                                                        Layout.fillWidth: true
+                                                        height: 32
+                                                        placeholderText: "Password"
+                                                        echoMode: TextInput.Password
+                                                        color: Theme.textForeground
+                                                        background: Rectangle {
+                                                            color: Theme.panelBackground
+                                                            radius: 6
+                                                            border.color: Theme.panelBorder
+                                                        }
+                                                        onAccepted: {
+                                                            Network.connectTo(modelData.ssid, pwdInput.text)
+                                                            pwdInput.text = ""
+                                                            netMouse.showPassword = false
+                                                        }
+                                                    }
+                                                    Rectangle {
+                                                        width: 80
+                                                        height: 32
+                                                        radius: 6
+                                                        color: Theme.activeTint
+                                                        Text {
+                                                            anchors.centerIn: parent
+                                                            text: "Connect"
+                                                            color: Theme.textForeground
+                                                            font.pixelSize: 12
+                                                            font.bold: true
+                                                        }
+                                                        MouseArea {
+                                                            anchors.fill: parent
+                                                            onClicked: {
+                                                                Network.connectTo(modelData.ssid, pwdInput.text)
+                                                                pwdInput.text = ""
+                                                                netMouse.showPassword = false
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                MouseArea {
+                                                    id: netMouse
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    property bool showPassword: false
+                                                    onClicked: {
+                                                        if (isConnected) {
+                                                            Network.disconnect()
+                                                        } else {
+                                                            if (modelData.security !== "") {
+                                                                showPassword = !showPassword
+                                                                if (showPassword) pwdInput.forceActiveFocus()
+                                                            } else {
+                                                                Network.connectTo(modelData.ssid, "")
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.alpha(Theme.textForeground, 0.1) }
+                                    }
+
+                                    Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.alpha(Theme.textForeground, 0.1) }
+
+                                    // Mobile Data Row
+                                    Item {
+                                        Layout.fillWidth: true
+                                        implicitHeight: 72
+                                        
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 16
+                                            spacing: 16
+                                            
+                                            MaterialIcon { text: "signal_cellular_null"; color: Theme.textForeground; font.pixelSize: 24; Layout.alignment: Qt.AlignVCenter }
+                                            
+                                            ColumnLayout {
+                                                Layout.fillWidth: true
+                                                Layout.alignment: Qt.AlignVCenter
+                                                spacing: 4
+                                                Text { text: "Mobile data"; color: Theme.textForeground; font.pixelSize: 14; Layout.fillWidth: true }
+                                                Text { text: "No network"; color: Theme.textSecondary; font.pixelSize: 12; Layout.fillWidth: true }
+                                            }
+                                            
+                                            MaterialIcon { text: "arrow_right"; color: Theme.textForeground; font.pixelSize: 20; Layout.alignment: Qt.AlignVCenter }
+                                            
+                                            // Switch
+                                            Rectangle {
+                                                implicitWidth: 44
+                                                implicitHeight: 24
+                                                radius: 12
+                                                color: Theme.activeTint
+                                                Layout.alignment: Qt.AlignVCenter
+                                                
+                                                Rectangle {
+                                                    width: 20
+                                                    height: 20
+                                                    radius: 10
+                                                    color: Theme.textForeground
+                                                    x: 22
+                                                    y: 2
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.alpha(Theme.textForeground, 0.1) }
+
+                                    // VPN Row
+                                    Item {
+                                        Layout.fillWidth: true
+                                        implicitHeight: 72
+                                        
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 16
+                                            spacing: 16
+                                            
+                                            MaterialIcon { text: "vpn_key"; color: Theme.textForeground; font.pixelSize: 24; Layout.alignment: Qt.AlignVCenter }
+                                            
+                                            ColumnLayout {
+                                                Layout.fillWidth: true
+                                                Layout.alignment: Qt.AlignVCenter
+                                                spacing: 4
+                                                Text { text: "VPN"; color: Theme.textForeground; font.pixelSize: 14; Layout.fillWidth: true }
+                                                Text { text: "Not connected"; color: Theme.textSecondary; font.pixelSize: 12; Layout.fillWidth: true }
+                                            }
+                                            
+                                            MaterialIcon { text: "arrow_right"; color: Theme.textForeground; font.pixelSize: 20; Layout.alignment: Qt.AlignVCenter }
+                                        }
+                                    }
+
+                                    Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.alpha(Theme.textForeground, 0.1) }
+
+                                    // Add connection Row
+                                    Item {
+                                        Layout.fillWidth: true
+                                        implicitHeight: 56
+                                        
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 56
+                                            anchors.rightMargin: 16
+                                            spacing: 16
+                                            
+                                            Text { 
+                                                text: "Add connection"
+                                                color: Theme.textForeground
+                                                font.pixelSize: 14
+                                                Layout.fillWidth: true
+                                                Layout.alignment: Qt.AlignVCenter
+                                            }
+                                            
+                                            MaterialIcon { text: "expand_more"; color: Theme.textForeground; font.pixelSize: 20; Layout.alignment: Qt.AlignVCenter }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            Item { Layout.fillHeight: true } // Bottom padding filler
+                        }
+                    }
                     Item {} // 1: Bluetooth
                     Item {} // 2: Connected devices
                     Item {} // 3: Accounts
@@ -231,8 +512,8 @@ Window {
                                                 Layout.fillWidth: true
                                                 Layout.alignment: Qt.AlignVCenter
                                                 spacing: 4
-                                                Text { text: "Appearance & Behavior"; color: Theme.textForeground; font.pixelSize: 14; font.bold: true }
-                                                Text { text: "Theme and top bar visibility"; color: Theme.textSecondary; font.pixelSize: 12 }
+                                                Text { text: "Appearance & Behavior"; color: Theme.textForeground; font.pixelSize: 14; font.bold: true; Layout.fillWidth: true }
+                                                Text { text: "Theme and top bar visibility"; color: Theme.textSecondary; font.pixelSize: 12; Layout.fillWidth: true }
                                             }
                                             
                                             MaterialIcon { 

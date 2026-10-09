@@ -27,31 +27,10 @@ Singleton {
         return "0x" + r + g + b + a;
     }
 
-    function syncMangoTheme() {
-        let content = "rootcolor=" + colorToMango(shelfBackground) + "\\n" +
-                      "bordercolor=" + colorToMango(alpha(buttonHover, 1.0)) + "\\n" +
-                      "dropcolor=" + colorToMango(alpha(accent, 0.5)) + "\\n" +
-                      "splitcolor=" + colorToMango(accent) + "\\n" +
-                      "focuscolor=" + colorToMango(accent) + "\\n" +
-                      "maximizescreencolor=" + colorToMango(accent) + "\\n" +
-                      "urgentcolor=" + colorToMango(danger) + "\\n" +
-                      "scratchpadcolor=" + colorToMango(textForeground) + "\\n" +
-                      "globalcolor=" + colorToMango(accent) + "\\n" +
-                      "overlaycolor=" + colorToMango(alpha(accent, 0.8)) + "\\n";
-        
-        let cmd = "echo -e '" + content + "' > ~/.config/mango/theme.conf && python3 " + Quickshell.env("HOME") + "/repos/tralphium/etc/mango_reload.py";
-        Quickshell.execDetached(["sh", "-c", cmd]);
-    }
-
     onActiveThemeNameChanged: {
         if (Config.theme !== activeThemeName) {
             Config.setTheme(activeThemeName);
         }
-        syncMangoTheme();
-    }
-
-    Component.onCompleted: {
-        syncMangoTheme();
     }
 
     function setTheme(name) {

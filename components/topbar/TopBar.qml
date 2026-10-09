@@ -32,32 +32,15 @@ PanelWindow {
             RowLayout {
                 spacing: 4
                 
-                Text {
-                    readonly property var activeToplevel: ToplevelManager.activeToplevel
-                    readonly property string activeAppId: activeToplevel ? (activeToplevel.appId || activeToplevel.title || "") : ""
-                    readonly property var resolvedApp: Apps.findApp(activeAppId)
-                    text: {
-                        if (resolvedApp && resolvedApp.name) {
-                            return resolvedApp.name;
-                        } else if (activeAppId) {
-                            return activeAppId.charAt(0).toUpperCase() + activeAppId.slice(1);
-                        } else {
-                            return "Tralphium";
-                        }
-                    }
-                    font.bold: true
-                    font.pixelSize: 12
-                    color: Theme.textForeground
-                    Layout.rightMargin: 12
-                }
+                
             }
 
             // Spacer
             Item { Layout.fillWidth: true }
 
-            // Right side: virtual desktops overview with numbers
+            // Right side: virtual desktops overview with numbers and window controls
             RowLayout {
-                spacing: 4
+                spacing: 8
                 
                 Repeater {
                     model: WindowManager.windowsets
@@ -90,6 +73,60 @@ PanelWindow {
                                 if (modelData.canActivate) {
                                     modelData.activate();
                                 }
+                            }
+                        }
+                    }
+                }
+
+                // Window Controls
+                RowLayout {
+                    spacing: 4
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.leftMargin: 8
+
+                    readonly property var activeToplevel: ToplevelManager.activeToplevel
+
+                    IconButton {
+                        icon: "remove"
+                        iconSize: 14
+                        implicitWidth: 20
+                        implicitHeight: 20
+                        visible: parent.activeToplevel !== null
+                        onClicked: {
+                            if (parent.activeToplevel) {
+                                if (parent.activeToplevel.setMinimized) {
+                                    parent.activeToplevel.setMinimized(true);
+                                } else {
+                                    parent.activeToplevel.minimized = true;
+                                }
+                            }
+                        }
+                    }
+                    IconButton {
+                        icon: "crop_square"
+                        iconSize: 14
+                        implicitWidth: 20
+                        implicitHeight: 20
+                        visible: parent.activeToplevel !== null
+                        onClicked: {
+                            if (parent.activeToplevel) {
+                                if (parent.activeToplevel.setMaximized) {
+                                    parent.activeToplevel.setMaximized(!parent.activeToplevel.maximized);
+                                } else {
+                                    parent.activeToplevel.maximized = !parent.activeToplevel.maximized;
+                                }
+                            }
+                        }
+                    }
+                    IconButton {
+                        icon: "close"
+                        iconSize: 14
+                        implicitWidth: 20
+                        implicitHeight: 20
+                        visible: parent.activeToplevel !== null
+                        onClicked: {
+                            if (parent.activeToplevel) {
+                                parent.activeToplevel.close();
                             }
                         }
                     }
