@@ -1,6 +1,7 @@
 import QtQuick
 import qs.themes
 import qs.widgets
+import qs.services
 
 // Single taskbar entry: app icon, running/active indicator, hover highlight.
 Rectangle {

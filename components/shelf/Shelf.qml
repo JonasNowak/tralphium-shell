@@ -41,7 +41,7 @@ PanelWindow {
     color: "transparent"
     
     // When hidden, we don't reserve space for maximized windows
-    exclusionMode: isHidden ? ExclusionMode.Ignore : ExclusionMode.Normal
+    exclusiveZone: isHidden ? 0 : (isVertical ? root.width + 4 : root.height + 4)
 
     Card {
         anchors.fill: parent

@@ -17,6 +17,7 @@ PanelWindow {
         right: true
     }
     implicitHeight: 20
+    exclusiveZone: root.height + 4
     color: "transparent"
 
     Item {
