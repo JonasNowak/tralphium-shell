@@ -57,16 +57,18 @@ Item {
         }
     }
 
-    RowLayout {
+    GridLayout {
         id: row
         anchors.centerIn: parent
-        spacing: 8
+        columnSpacing: 8
+        rowSpacing: 8
+        flow: root.isVertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
 
         ListView {
         orientation: root.isVertical ? ListView.Vertical : ListView.Horizontal
             id: pinnedList
-            implicitWidth: contentWidth
-            implicitHeight: 44
+            implicitWidth: root.isVertical ? 44 : contentWidth
+            implicitHeight: root.isVertical ? contentHeight : 44
             spacing: 8
             interactive: false
 

@@ -10,15 +10,14 @@ Popup {
     property var parentWindow: null
     default property alias content: contentItemLayout.data
     
-    // Automatically center in parentWindow if provided, else use parent
-    x: parentWindow ? (parentWindow.width - width) / 2 : (parent ? (parent.width - width) / 2 : 0)
-    y: parentWindow ? (parentWindow.height - height) / 2 : (parent ? (parent.height - height) / 2 : 0)
+    anchors.centerIn: Overlay.overlay
     
     width: 320
-    height: contentContainer.implicitHeight + 48
     modal: true
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    
+    padding: 24
     
     background: Rectangle {
         color: Theme.panelBackground
@@ -29,8 +28,6 @@ Popup {
 
     contentItem: ColumnLayout {
         id: contentContainer
-        anchors.fill: parent
-        anchors.margins: 24
         spacing: 16
 
         Text {

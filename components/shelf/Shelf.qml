@@ -48,15 +48,34 @@ PanelWindow {
 
         // Square off the corner touching the screen edge
         Rectangle {
-            anchors { 
-                bottom: Config.shelfPosition === "bottom" ? parent.bottom : undefined
-                left: Config.shelfPosition === "left" ? parent.left : undefined
-                right: Config.shelfPosition === "right" ? parent.right : undefined
-                top: Config.shelfPosition !== "bottom" ? parent.top : undefined
-            }
-            height: Config.shelfPosition === "bottom" ? Theme.panelRadius : parent.height
-            width: Config.shelfPosition !== "bottom" ? Theme.panelRadius : parent.width
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: Theme.panelRadius
             color: parent.color
+            visible: Config.shelfPosition === "bottom"
+            Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: Theme.panelBorderWidth; color: Theme.panelBorder }
+            Rectangle { anchors.right: parent.right; anchors.top: parent.top; anchors.bottom: parent.bottom; width: Theme.panelBorderWidth; color: Theme.panelBorder }
+        }
+        Rectangle {
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            width: Theme.panelRadius
+            color: parent.color
+            visible: Config.shelfPosition === "left"
+            Rectangle { anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; height: Theme.panelBorderWidth; color: Theme.panelBorder }
+            Rectangle { anchors.bottom: parent.bottom; anchors.left: parent.left; anchors.right: parent.right; height: Theme.panelBorderWidth; color: Theme.panelBorder }
+        }
+        Rectangle {
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            width: Theme.panelRadius
+            color: parent.color
+            visible: Config.shelfPosition === "right"
+            Rectangle { anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; height: Theme.panelBorderWidth; color: Theme.panelBorder }
+            Rectangle { anchors.bottom: parent.bottom; anchors.left: parent.left; anchors.right: parent.right; height: Theme.panelBorderWidth; color: Theme.panelBorder }
         }
         
         MouseArea {
