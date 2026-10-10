@@ -52,14 +52,8 @@ Overlay {
     SystemClock { id: clock; precision: SystemClock.Minutes }
 
     ColumnLayout {
-        anchors.left: Config.shelfPosition === "left" ? parent.left : undefined
-        anchors.right: Config.shelfPosition === "left" ? undefined : parent.right
-        anchors.bottom: Config.shelfPosition === "top" ? undefined : parent.bottom
-        anchors.top: Config.shelfPosition === "top" ? parent.top : undefined
-        anchors.leftMargin: Config.shelfPosition === "left" ? 52 : 4
-        anchors.rightMargin: Config.shelfPosition === "right" ? 52 : 4
-        anchors.topMargin: Config.shelfPosition === "top" ? 52 : 4
-        anchors.bottomMargin: Config.shelfPosition === "bottom" ? 52 : 4
+        x: Config.shelfPosition === "left" ? 52 : parent.width - width - (Config.shelfPosition === "right" ? 52 : 4)
+        y: Config.shelfPosition === "top" ? 52 : parent.height - height - (Config.shelfPosition === "bottom" ? 52 : 4)
         width: 380
         spacing: 8
 

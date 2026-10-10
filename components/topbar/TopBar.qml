@@ -29,17 +29,7 @@ PanelWindow {
             anchors.rightMargin: 16
             spacing: 8
 
-            // Left side: Active Application Name
-            RowLayout {
-                spacing: 4
-                
-                
-            }
-
-            // Spacer
-            Item { Layout.fillWidth: true }
-
-            // Right side: virtual desktops overview with numbers and window controls
+            // Left side: virtual desktops overview with numbers, and App Name
             RowLayout {
                 spacing: 8
                 
@@ -78,57 +68,79 @@ PanelWindow {
                         }
                     }
                 }
-
-                // Window Controls
-                RowLayout {
-                    spacing: 4
-                    Layout.alignment: Qt.AlignVCenter
-                    Layout.leftMargin: 8
-
+                
+                // Active Application Name
+                Text {
                     readonly property var activeToplevel: ToplevelManager.activeToplevel
+                    readonly property string activeAppId: activeToplevel ? (activeToplevel.appId || activeToplevel.title || "") : ""
+                    readonly property var resolvedApp: Apps.findApp(activeAppId)
+                    text: {
+                        if (resolvedApp && resolvedApp.name) {
+                            return resolvedApp.name;
+                        } else if (activeAppId) {
+                            return activeAppId.charAt(0).toUpperCase() + activeAppId.slice(1);
+                        } else {
+                            return "Tralphium";
+                        }
+                    }
+                    font.bold: true
+                    font.pixelSize: 12
+                    color: Theme.textForeground
+                    Layout.leftMargin: 8
+                }
+            }
 
-                    IconButton {
-                        icon: "remove"
-                        iconSize: 14
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        visible: parent.activeToplevel !== null
-                        onClicked: {
-                            if (parent.activeToplevel) {
-                                if (parent.activeToplevel.setMinimized) {
-                                    parent.activeToplevel.setMinimized(true);
-                                } else {
-                                    parent.activeToplevel.minimized = true;
-                                }
+            // Spacer
+            Item { Layout.fillWidth: true }
+
+            // Right side: Window Controls
+            RowLayout {
+                spacing: 4
+                Layout.alignment: Qt.AlignVCenter
+
+                readonly property var activeToplevel: ToplevelManager.activeToplevel
+
+                IconButton {
+                    icon: "remove"
+                    iconSize: 14
+                    implicitWidth: 20
+                    implicitHeight: 20
+                    visible: parent.activeToplevel !== null
+                    onClicked: {
+                        if (parent.activeToplevel) {
+                            if (parent.activeToplevel.setMinimized) {
+                                parent.activeToplevel.setMinimized(true);
+                            } else {
+                                parent.activeToplevel.minimized = true;
                             }
                         }
                     }
-                    IconButton {
-                        icon: "crop_square"
-                        iconSize: 14
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        visible: parent.activeToplevel !== null
-                        onClicked: {
-                            if (parent.activeToplevel) {
-                                if (parent.activeToplevel.setMaximized) {
-                                    parent.activeToplevel.setMaximized(!parent.activeToplevel.maximized);
-                                } else {
-                                    parent.activeToplevel.maximized = !parent.activeToplevel.maximized;
-                                }
+                }
+                IconButton {
+                    icon: "crop_square"
+                    iconSize: 14
+                    implicitWidth: 20
+                    implicitHeight: 20
+                    visible: parent.activeToplevel !== null
+                    onClicked: {
+                        if (parent.activeToplevel) {
+                            if (parent.activeToplevel.setMaximized) {
+                                parent.activeToplevel.setMaximized(!parent.activeToplevel.maximized);
+                            } else {
+                                parent.activeToplevel.maximized = !parent.activeToplevel.maximized;
                             }
                         }
                     }
-                    IconButton {
-                        icon: "close"
-                        iconSize: 14
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        visible: parent.activeToplevel !== null
-                        onClicked: {
-                            if (parent.activeToplevel) {
-                                parent.activeToplevel.close();
-                            }
+                }
+                IconButton {
+                    icon: "close"
+                    iconSize: 14
+                    implicitWidth: 20
+                    implicitHeight: 20
+                    visible: parent.activeToplevel !== null
+                    onClicked: {
+                        if (parent.activeToplevel) {
+                            parent.activeToplevel.close();
                         }
                     }
                 }

@@ -41,7 +41,6 @@ ColumnLayout {
     }
 
     DialogPopup {
-    DialogPopup {
         id: mouseDialog
         title: "Mouse and touchpad"
         SettingRow {
@@ -54,6 +53,7 @@ ColumnLayout {
         }
     }
 
+    DialogPopup {
         id: keyboardDialog
         title: "Keyboard"
         
@@ -127,13 +127,13 @@ ColumnLayout {
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.alpha(Theme.textForeground, 0.1); anchors.leftMargin: 16 }
             
             SettingRow { 
-            SettingRow { 
                 icon: "mouse"
                 title: "Mouse and touchpad"
                 Button { text: "Open"; onClicked: mouseDialog.open() }
             }
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.alpha(Theme.textForeground, 0.1); anchors.leftMargin: 16 }
 
+            SettingRow { 
                 icon: "keyboard"
                 title: "Keyboard"
                 Button { text: "Open"; onClicked: keyboardDialog.open() }
