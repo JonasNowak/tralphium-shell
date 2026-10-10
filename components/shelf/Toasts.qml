@@ -113,8 +113,8 @@ PanelWindow {
                         }
                         implicitHeight: notifRow.implicitHeight + 24
                         
-                        color: "#f8f9fa"
-                        border.color: "#e9ecef"
+                        color: Theme.cardBackground
+                        border.color: Theme.alpha(Theme.textForeground, 0.1)
                         
                         HoverHandler {
                             onHoveredChanged: {
@@ -147,7 +147,7 @@ PanelWindow {
                                     Text {
                                         Layout.fillWidth: true
                                         text: model.notif.appName || "System"
-                                        color: "#5f6368"
+                                        color: Theme.textSecondary
                                         font.pixelSize: 12
                                     }
                                     
@@ -156,7 +156,7 @@ PanelWindow {
                                         implicitWidth: 24
                                         implicitHeight: 24
                                         iconSize: 16
-                                        iconColor: "#5f6368"
+                                        iconColor: Theme.iconColor
                                         baseColor: "transparent"
                                         onClicked: delegateRoot.performDismiss()
                                     }
@@ -165,7 +165,7 @@ PanelWindow {
                                 Text {
                                     Layout.fillWidth: true
                                     text: model.notif.summary
-                                    color: "#202124"
+                                    color: Theme.textForeground
                                     font.pixelSize: 14
                                     font.bold: true
                                     wrapMode: Text.Wrap
@@ -174,7 +174,7 @@ PanelWindow {
                                 Text {
                                     Layout.fillWidth: true
                                     text: model.notif.body
-                                    color: "#5f6368"
+                                    color: Theme.textSecondary
                                     font.pixelSize: 13
                                     wrapMode: Text.Wrap
                                     visible: model.notif.body !== ""

@@ -5,11 +5,12 @@ import qs.themes
 import qs.widgets
 import qs.services
 
-// Pills on the right of the shelf: date, and network/battery/clock.
-RowLayout {
+GridLayout {
     id: root
+    property bool isVertical: false
+    flow: isVertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
     signal clicked()
-    spacing: 3.5
+    rowSpacing: 3.5; columnSpacing: 3.5
 
     readonly property bool isHovered: dateMouse.containsMouse || mainMouse.containsMouse
 
@@ -20,12 +21,12 @@ RowLayout {
 
     Rectangle {
         id: datePill
-        implicitHeight: 36
-        implicitWidth: dateText.implicitWidth + 24
+        implicitHeight: root.isVertical ? dateText.implicitHeight + 24 : 36
+        implicitWidth: root.isVertical ? 36 : dateText.implicitWidth + 24
         
         topLeftRadius: 18
-        bottomLeftRadius: 18
-        topRightRadius: 4
+        topRightRadius: root.isVertical ? 18 : 4
+        bottomLeftRadius: root.isVertical ? 4 : 18
         bottomRightRadius: 4
         
         color: root._highlight ? Theme.hover : Theme.alpha(Theme.buttonHover, 0.3)
@@ -33,10 +34,11 @@ RowLayout {
         Text {
             id: dateText
             anchors.centerIn: parent
-            text: Qt.formatDate(clock.date, "MMM d")
+            text: Qt.formatDate(clock.date, root.isVertical ? "dd\nMMM" : "MMM d")
             color: Theme.textForeground
             font.pixelSize: 13
             font.bold: true
+            horizontalAlignment: Text.AlignHCenter
         }
 
         MouseArea {
@@ -49,26 +51,28 @@ RowLayout {
 
     Rectangle {
         id: mainPill
-        implicitHeight: 36
-        implicitWidth: row.implicitWidth + 24
+        implicitHeight: root.isVertical ? row.implicitHeight + 24 : 36
+        implicitWidth: root.isVertical ? 36 : row.implicitWidth + 24
         
-        topLeftRadius: 4
-        bottomLeftRadius: 4
-        topRightRadius: 18
+        topLeftRadius: root.isVertical ? 4 : 4
+        topRightRadius: root.isVertical ? 4 : 18
+        bottomLeftRadius: root.isVertical ? 18 : 4
         bottomRightRadius: 18
         
         color: root._highlight ? Theme.hover : Theme.alpha(Theme.buttonHover, 0.3)
 
-        RowLayout {
+        GridLayout {
             id: row
             anchors.centerIn: parent
-            spacing: 12
+            flow: root.isVertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+            rowSpacing: 12; columnSpacing: 12
 
             Text {
-                text: Qt.formatTime(clock.date, "h:mm")
+                text: Qt.formatTime(clock.date, root.isVertical ? "hh\nmm" : "h:mm")
                 color: Theme.textForeground
                 font.pixelSize: 13
                 font.bold: true
+                horizontalAlignment: Text.AlignHCenter
             }
 
             Rectangle {

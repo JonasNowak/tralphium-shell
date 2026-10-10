@@ -12,6 +12,7 @@ Overlay {
     id: root
     signal powerMenuRequested()
     signal settingsRequested()
+    signal networkSettingsRequested()
 
     property bool nightLightOn: false
     property bool trayExpanded: false
@@ -139,7 +140,7 @@ Overlay {
                             width: delegateRoot.width
                             implicitHeight: notifRow.implicitHeight + 24
                             
-                            // Chrome OS Light Theme styling
+                            // Tralphium Light Theme styling
                             color: "#f8f9fa"
                             border.color: "#e9ecef"
 
@@ -386,18 +387,24 @@ Overlay {
                     columnSpacing: 8
 
                     QuickToggle {
-                        icon: "wifi"; title: "Network"; subtitle: "Strong"; active: true
-                        onClicked: Config.launchNetworkManager()
+                        icon: Network.currentSsid !== "" ? "network_wifi" : "wifi_off"
+                        title: "Network"
+                        subtitle: Network.currentSsid !== "" ? Network.currentSsid : "Not connected"
+                        active: Network.currentSsid !== ""
+                        onClicked: {
+                            root.close()
+                            root.networkSettingsRequested()
+                        }
                     }
                     QuickToggle {
-                        icon: "bluetooth"; title: "Bluetooth"; subtitle: "On"; active: true
-                        onClicked: Config.launchBluetoothManager()
+                        icon: "bluetooth"; title: "Bluetooth"; subtitle: Bluetooth.enabled ? "On" : "Off"; active: Bluetooth.enabled
+                        onClicked: Bluetooth.toggle()
                     }
                     QuickToggle {
-                        icon: "notifications"
-                        title: "Notifications"
-                        subtitle: NotificationService.notificationsEnabled ? "On" : "Off"
-                        active: NotificationService.notificationsEnabled
+                        icon: NotificationService.notificationsEnabled ? "notifications" : "do_not_disturb_on"
+                        title: "Do Not Disturb"
+                        subtitle: NotificationService.notificationsEnabled ? "Off" : "On"
+                        active: !NotificationService.notificationsEnabled
                         onClicked: NotificationService.notificationsEnabled = !NotificationService.notificationsEnabled
                     }
                     QuickToggle {

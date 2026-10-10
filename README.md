@@ -1,6 +1,6 @@
-# Tralphium - Chrome OS Quick Shell Clone
+# Tralphium (v0.10 alpha)
 
-An absolutely minimal, easily modifiable one-to-one clone of the Chrome OS bottom shelf, fully written in [Quickshell](https://outfoxxed.me/quickshell/).
+An absolutely minimal, easily modifiable one-to-one clone of the Tralphium bottom shelf, fully written in [Quickshell](https://outfoxxed.me/quickshell/).
 
 ## Dependencies
 

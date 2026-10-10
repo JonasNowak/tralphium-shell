@@ -33,6 +33,34 @@ RowLayout {
         id: slider
         Layout.fillWidth: true
         onMoved: root.moved(value)
+        
+        background: Rectangle {
+            x: slider.leftPadding
+            y: slider.topPadding + slider.availableHeight / 2 - height / 2
+            implicitWidth: 200
+            implicitHeight: 4
+            width: slider.availableWidth
+            height: implicitHeight
+            radius: 2
+            color: Theme.alpha(Theme.textForeground, 0.2)
+
+            Rectangle {
+                width: slider.visualPosition * parent.width
+                height: parent.height
+                color: Theme.activeTint
+                radius: 2
+            }
+        }
+
+        handle: Rectangle {
+            x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
+            y: slider.topPadding + slider.availableHeight / 2 - height / 2
+            implicitWidth: 16
+            implicitHeight: 16
+            radius: 8
+            color: slider.pressed ? Theme.hover : Theme.activeTint
+            border.color: Theme.alpha(Theme.textForeground, 0.1)
+        }
     }
 
     // Kept (invisible) when unused so all sliders line up

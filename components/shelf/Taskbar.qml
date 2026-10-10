@@ -9,6 +9,7 @@ import qs.widgets
 // Centered task list: pinned apps first, then running apps that aren't pinned.
 Item {
     id: root
+    property bool isVertical: false
     property var panelWindow
 
     // Target of the open context menu
@@ -62,10 +63,10 @@ Item {
         spacing: 8
 
         ListView {
+        orientation: root.isVertical ? ListView.Vertical : ListView.Horizontal
             id: pinnedList
             implicitWidth: contentWidth
             implicitHeight: 44
-            orientation: ListView.Horizontal
             spacing: 8
             interactive: false
 

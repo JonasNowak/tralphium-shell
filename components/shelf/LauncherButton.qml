@@ -2,7 +2,7 @@ import QtQuick
 import qs.themes
 import qs.widgets
 
-// Chrome OS style launcher: a ring with a dot.
+// Tralphium style launcher: a ring with a dot.
 IconButton {
     baseColor: Theme.buttonBackground
 

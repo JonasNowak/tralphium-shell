@@ -5,7 +5,7 @@ import qs.services
 import qs.themes
 import qs.widgets
 
-// Chrome OS style power dialog centered on a dimmed screen.
+// Tralphium style power dialog centered on a dimmed screen.
 Overlay {
     id: root
 

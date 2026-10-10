@@ -15,14 +15,28 @@ Rectangle {
     implicitHeight: 36
     radius: width / 2
     property bool isActive: false
-    color: (hovered || isActive) ? Theme.hover : baseColor
+    color: isActive ? Theme.hover : baseColor
 
     MaterialIcon { id: glyph; anchors.centerIn: parent }
+    
+    Ripple {
+        id: ripple
+    }
 
     MouseArea {
         id: mouse
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: root.clicked()
+        onClicked: (mouseEvent) => {
+            ripple.start(mouseEvent.x, mouseEvent.y)
+            root.clicked()
+        }
+    }
+    
+    Rectangle {
+        anchors.fill: parent
+        radius: parent.radius
+        color: mouse.containsMouse ? Theme.hover : "transparent"
+        visible: mouse.containsMouse
     }
 }

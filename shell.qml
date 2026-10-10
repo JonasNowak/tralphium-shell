@@ -8,11 +8,18 @@ import qs.components.powermenu
 import qs.components.topbar
 import qs.components.settings
 import qs.services
+import qs.widgets
 
 // Entry point: wires the shell's top-level surfaces together.
 // The active theme is selected in themes/Theme.qml.
 ShellRoot {
     id: shellRoot
+    
+    Component.onCompleted: Autostart // Force singleton load
+    Wallpaper {
+        source: Config.wallpaper
+        visible: Config.wallpaper !== ""
+    }
     
     // Feature toggle for the optional Googlebook style top bar, synced via Config
     property bool enableTopBar: Config.topBar
@@ -47,6 +54,7 @@ ShellRoot {
         id: controlPanel
         onPowerMenuRequested: powerMenu.open()
         onSettingsRequested: settingsWindow.open()
+        onNetworkSettingsRequested: settingsWindow.openNetworkSettings()
     }
     
     Toasts {
