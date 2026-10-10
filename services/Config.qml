@@ -181,7 +181,8 @@ Singleton {
         // Apply to Mango VM config where possible
         launch("sed -i \"s/^xkb_rules_layout=.*/xkb_rules_layout=" + root.keyboardLayout + "/\" ~/.config/mango/config.conf");
         launch("sed -i \"s/^trackpad_left_handed=.*/trackpad_left_handed=" + (root.mouseSwapButtons ? 1 : 0) + "/\" ~/.config/mango/config.conf");
-
+        const scriptPath = Qt.resolvedUrl("../etc/mango_reload.py").toString().replace("file://", "");
+        launch("python3 " + scriptPath);
 
         configFile.setText(json);
     }

@@ -60,7 +60,14 @@ Overlay {
     Card {
         width: 590
         height: 654
-        anchors { left: parent.left; bottom: parent.bottom; margins: 4 }
+        anchors.left: Config.shelfPosition === "right" ? undefined : parent.left
+        anchors.right: Config.shelfPosition === "right" ? parent.right : undefined
+        anchors.bottom: Config.shelfPosition === "top" ? undefined : parent.bottom
+        anchors.top: Config.shelfPosition === "top" ? parent.top : undefined
+        anchors.leftMargin: Config.shelfPosition === "left" ? 52 : 4
+        anchors.rightMargin: Config.shelfPosition === "right" ? 52 : 4
+        anchors.topMargin: Config.shelfPosition === "top" ? 52 : 4
+        anchors.bottomMargin: Config.shelfPosition === "bottom" ? 52 : 4
         onClicked: appMenu.visible = false
 
         ColumnLayout {

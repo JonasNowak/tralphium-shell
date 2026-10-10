@@ -87,6 +87,7 @@ Item {
                     Pins.insertPin(draggedAppId, pinIndex);
                 }
                 
+                isVertical: root.isVertical
                 appId: model.appId
                 name: resolvedApp ? resolvedApp.name : root.capitalize(model.appId)
                 icon: resolvedApp ? resolvedApp.icon : ""
@@ -113,6 +114,7 @@ Item {
             delegate: TaskButton {
                 id: task
                 readonly property var resolvedApp: Apps.findApp(modelData.appId || modelData.title)
+                isVertical: root.isVertical
                 appId: modelData.appId || ""
                 name: resolvedApp ? resolvedApp.name : root.capitalize(modelData.appId || modelData.title || "?")
                 icon: resolvedApp ? resolvedApp.icon : ""

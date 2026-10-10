@@ -9,6 +9,7 @@ Rectangle {
     property string name
     property bool running: false
     property bool active: false
+    property bool isVertical: false
     property string icon: ""
     readonly property alias hovered: mouse.containsMouse
 
@@ -33,12 +34,17 @@ Rectangle {
 
     // Running indicator
     Rectangle {
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 2
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: root.isVertical ? undefined : parent.bottom
+        anchors.left: root.isVertical ? (Config.shelfPosition === "left" ? parent.left : undefined) : undefined
+        anchors.right: root.isVertical ? (Config.shelfPosition === "right" ? parent.right : undefined) : undefined
+        anchors.horizontalCenter: root.isVertical ? undefined : parent.horizontalCenter
+        anchors.verticalCenter: root.isVertical ? parent.verticalCenter : undefined
+        anchors.bottomMargin: root.isVertical ? 0 : 2
+        anchors.leftMargin: root.isVertical ? 2 : 0
+        anchors.rightMargin: root.isVertical ? 2 : 0
         visible: root.running
-        width: root.active ? 12 : 4
-        height: 2
+        width: root.isVertical ? 2 : (root.active ? 12 : 4)
+        height: root.isVertical ? (root.active ? 12 : 4) : 2
         radius: 1
         color: root.active ? Theme.indicatorActive : Theme.indicatorInactive
     }
